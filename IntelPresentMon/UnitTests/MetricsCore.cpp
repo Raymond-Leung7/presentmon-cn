@@ -1780,9 +1780,12 @@ TEST_CLASS(ComputeMetricsForPresentTests)
                 Assert::IsFalse(IsMissingFrameMetricValue(metrics.msFlipDelay),
                     L"msFlipDelay should not be stored as missing (NaN)");
 
-                Assert::AreEqual(0.0, metrics.msCPUBusy, 0.0001);
-                Assert::AreEqual(0.0, metrics.msCPUWait, 0.0001);
-                Assert::AreEqual(0.0, metrics.msCPUTime, 0.0001);
+                Assert::IsTrue(IsMissingFrameMetricValue(metrics.msCPUBusy),
+                    L"msCPUBusy should be stored as missing (NaN)");
+                Assert::IsTrue(IsMissingFrameMetricValue(metrics.msCPUWait),
+                    L"msCPUWait should be stored as missing (NaN)");
+                Assert::IsTrue(IsMissingFrameMetricValue(metrics.msCPUTime),
+                    L"msCPUTime should be stored as missing (NaN)");
                 Assert::AreEqual(0.0, metrics.msGPULatency, 0.0001);
                 Assert::AreEqual(0.0, metrics.msGPUBusy, 0.0001);
                 Assert::AreEqual(0.0, metrics.msGPUWait, 0.0001);

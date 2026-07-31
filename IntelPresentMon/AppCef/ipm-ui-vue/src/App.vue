@@ -103,7 +103,11 @@ Api.registerPresentmonInitFailedHandler(() => {
   console.error('received presentmon init failed signal')
 })
 Api.registerOverlayDiedHandler(() => {
-  notes.notify({text: t.overlayCrashed});
+  const wasAutotargetting = prefs.preferences.enableAutotargetting;
+  notes.notify({text: wasAutotargetting ? t.overlayCrashedAutotargetDisabled : t.overlayCrashed});
+  if (wasAutotargetting) {
+    prefs.preferences.enableAutotargetting = false;
+  }
   prefs.pid = null
   console.error('received overlay died signal');
 })

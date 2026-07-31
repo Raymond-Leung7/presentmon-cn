@@ -49,12 +49,14 @@ ccleaner64.exe
 cef_server.exe
 cefsharp.browsersubprocess.exe
 cephtmlengine.exe
+chatgpt.exe
 chrome.exe
 cinebench.exe
 cinema 4D.exe
 cmd.exe
 code - insiders.exe
 code.exe
+codex-computer-use.exe
 collect2.exe
 commsapps.exe
 conhost.exe

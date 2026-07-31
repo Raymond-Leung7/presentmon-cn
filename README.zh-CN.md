@@ -84,7 +84,7 @@ Debug 构建不需要 Release 版本使用的测试证书。
 准备好完整的 Release 依赖后，可在仓库根目录运行：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\packaging\build-release.ps1 -Version 1.1.1
+powershell -ExecutionPolicy Bypass -File .\packaging\build-release.ps1 -Version 1.1.2
 ```
 
 脚本会构建无控制台窗口的启动器、便携 ZIP、当前用户安装程序和 SHA-256 校验文件，输出到 `dist` 文件夹。安装程序需要 Inno Setup 6；只需要便携包时可添加 `-SkipInstaller`。
@@ -106,6 +106,7 @@ Set-Location .\build\Debug
 
 ## 权限和常见问题
 
+- 安装版和便携版启动器会自动检查捕获权限；不在“性能日志用户”本地组时，会请求一次管理员授权后启动。已具备权限的用户不会看到该提示。
 - 无法采集性能数据或从 Visual Studio 启动时，可将当前 Windows 用户加入“性能日志用户”（Performance Log Users）本地组，然后注销并重新登录。
 - 手动创建、启动或删除 Windows 服务需要管理员权限；使用 `--svc-as-child` 通常更适合本地开发。
 - 发行版使用独立的子服务和通信名称，可与已安装的官方版共存。直接运行源码目录中的裸 `PresentMon.exe` 时，才需要注意它可能连接到版本不匹配的官方服务。

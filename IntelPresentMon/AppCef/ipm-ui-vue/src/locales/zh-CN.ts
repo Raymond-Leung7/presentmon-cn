@@ -42,6 +42,7 @@ export const zhCN = {
     initErrorTitle: 'PresentMon 初始化错误',
     initErrorText: '无法初始化 PresentMon API。请确认 PresentMon 服务已安装并正在运行，然后重试。',
     overlayCrashed: '错误：覆盖层意外崩溃。',
+    overlayCrashedAutotargetDisabled: '错误：覆盖层意外崩溃，已关闭自动选择目标，请手动选择进程后重试。',
     processExited: '所选进程已经退出。',
     loadAutosaveFailed: '无法加载自动保存的布局文件。',
     loadPresetFailed: (fileName: string) => `无法加载预设文件 [${fileName}]。`,

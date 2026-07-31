@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <shellapi.h>
 
 #include <array>
 #include <filesystem>
@@ -62,7 +63,10 @@ namespace
         return message;
     }
 
-    bool GetLauncherDirectory(std::filesystem::path& directory, DWORD& error)
+    bool GetLauncherPaths(
+        std::filesystem::path& executable,
+        std::filesystem::path& directory,
+        DWORD& error)
     {
         std::vector<wchar_t> buffer(32768);
         SetLastError(ERROR_SUCCESS);
@@ -76,7 +80,8 @@ namespace
             return false;
         }
 
-        directory = std::filesystem::path{ std::wstring{ buffer.data(), length } }.parent_path();
+        executable = std::filesystem::path{ std::wstring{ buffer.data(), length } };
+        directory = executable.parent_path();
         if (directory.empty()) {
             error = ERROR_PATH_NOT_FOUND;
             return false;
@@ -96,6 +101,71 @@ namespace
         return GetFileAttributesW(path.c_str()) != INVALID_FILE_ATTRIBUTES;
     }
 
+    bool TryGetCurrentProcessElevation(bool& elevated, DWORD& error)
+    {
+        elevated = false;
+        HANDLE token = nullptr;
+        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token)) {
+            error = GetLastError();
+            return false;
+        }
+
+        TOKEN_ELEVATION elevation{};
+        DWORD returnedSize = 0;
+        const BOOL success = GetTokenInformation(
+            token,
+            TokenElevation,
+            &elevation,
+            (DWORD)sizeof(elevation),
+            &returnedSize);
+        if (!success) {
+            error = GetLastError();
+            CloseHandle(token);
+            return false;
+        }
+        CloseHandle(token);
+        elevated = elevation.TokenIsElevated != 0;
+        return true;
+    }
+
+    bool IsPerformanceLogUser()
+    {
+        std::array<BYTE, SECURITY_MAX_SID_SIZE> sidBuffer{};
+        DWORD sidSize = (DWORD)sidBuffer.size();
+        if (!CreateWellKnownSid(
+            WinBuiltinPerfLoggingUsersSid,
+            nullptr,
+            sidBuffer.data(),
+            &sidSize)) {
+            return false;
+        }
+
+        BOOL isMember = FALSE;
+        return CheckTokenMembership(nullptr, sidBuffer.data(), &isMember) && isMember;
+    }
+
+    bool RelaunchElevated(
+        const std::filesystem::path& executable,
+        const std::filesystem::path& directory,
+        const wchar_t* arguments,
+        DWORD& error)
+    {
+        SHELLEXECUTEINFOW executeInfo{};
+        executeInfo.cbSize = (DWORD)sizeof(executeInfo);
+        executeInfo.lpVerb = L"runas";
+        executeInfo.lpFile = executable.c_str();
+        executeInfo.lpParameters = arguments != nullptr && arguments[0] != L'\0'
+            ? arguments
+            : nullptr;
+        executeInfo.lpDirectory = directory.c_str();
+        executeInfo.nShow = SW_SHOWNORMAL;
+        if (!ShellExecuteExW(&executeInfo)) {
+            error = GetLastError();
+            return false;
+        }
+        return true;
+    }
+
     std::wstring FindMissingFiles(const std::filesystem::path& appDirectory)
     {
         constexpr std::array RequiredFiles{
@@ -104,6 +174,7 @@ namespace
             L"PresentMonService.exe",
             L"PresentMonAPI2.dll",
             L"PresentMonAPI2Loader.dll",
+            L"TargetBlockList.txt",
         };
 
         std::wstring missing;
@@ -122,8 +193,9 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR arguments, int)
 {
     try {
         DWORD error = ERROR_SUCCESS;
+        std::filesystem::path launcherPath;
         std::filesystem::path launcherDirectory;
-        if (!GetLauncherDirectory(launcherDirectory, error)) {
+        if (!GetLauncherPaths(launcherPath, launcherDirectory, error)) {
             ShowError(MakeWindowsErrorMessage(
                 L"PresentMon could not locate the launcher directory.", {}, error));
             return 1;
@@ -134,12 +206,30 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR arguments, int)
         const auto missingFiles = FindMissingFiles(appDirectory);
         if (!missingFiles.empty()) {
             std::wstring message =
-                L"PresentMon cannot start because the portable package is incomplete.\n\n"
+                L"PresentMon cannot start because its application files are incomplete.\n\n"
                 L"Missing required files:\n";
             message += missingFiles;
-            message += L"\nRe-extract the complete portable package and try again.";
+            message += L"\nRepair the installation or re-extract the portable package, then try again.";
             ShowError(message);
             return 2;
+        }
+
+        bool isElevated = false;
+        if (!TryGetCurrentProcessElevation(isElevated, error)) {
+            ShowError(MakeWindowsErrorMessage(
+                L"PresentMon could not check the current capture permissions.", {}, error));
+            return 5;
+        }
+
+        if (!isElevated && !IsPerformanceLogUser()) {
+            if (!RelaunchElevated(launcherPath, launcherDirectory, arguments, error)) {
+                ShowError(MakeWindowsErrorMessage(
+                    L"PresentMon needs administrator permission to capture performance data.",
+                    launcherPath,
+                    error));
+                return 5;
+            }
+            return 0;
         }
 
         std::wstring commandLine = L"\"";

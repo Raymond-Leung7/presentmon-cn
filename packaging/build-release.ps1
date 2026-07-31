@@ -2,7 +2,7 @@
 param(
     [Parameter()]
     [ValidatePattern('^\d+\.\d+\.\d+$')]
-    [string]$Version = '1.1.1',
+    [string]$Version = '1.1.2',
 
     [Parameter()]
     [switch]$SkipNativeBuild,
@@ -192,6 +192,16 @@ $runtimeDirectories = @(
 
 foreach ($directory in $runtimeDirectories) {
     Copy-RequiredDirectory -Source (Join-Path $buildRoot $directory) -Destination (Join-Path $appRoot $directory)
+}
+
+$blockListSource = Join-Path $buildRoot 'BlockLists\TargetBlockList.txt'
+$installedBlockList = Join-Path $appRoot 'TargetBlockList.txt'
+$portableBlockList = Join-Path $appRoot 'BlockLists\TargetBlockList.txt'
+Copy-RequiredFile -Source $blockListSource -Destination $installedBlockList
+
+if ((Get-FileHash -LiteralPath $installedBlockList -Algorithm SHA256).Hash -ne
+    (Get-FileHash -LiteralPath $portableBlockList -Algorithm SHA256).Hash) {
+    throw 'Installed and portable target block lists do not match.'
 }
 
 Copy-RequiredFile -Source (Join-Path $buildRoot 'PresentMon-CN.exe') -Destination (Join-Path $stageRoot 'PresentMon-CN.exe')

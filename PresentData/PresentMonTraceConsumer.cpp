@@ -3652,7 +3652,7 @@ void PMTraceConsumer::SetEventProcessingEnabled(bool enabled) {
     mEventProcessingEnabled.store(enabled, std::memory_order_release);
 }
 
-void PMTraceConsumer::ResetPresentTrackingData(bool shrink) {
+bool PMTraceConsumer::ResetPresentTrackingData(bool shrink) {
 
     // Disable any future processing first
     SetEventProcessingEnabled(false);
@@ -3670,7 +3670,7 @@ void PMTraceConsumer::ResetPresentTrackingData(bool shrink) {
         ULONGLONG elapsed = ::GetTickCount64() - startMs;
         if (elapsed >= timeoutMs) {
             pmlog_warn("Timed out waiting for event processing to quiesce; skipping present tracking reset");
-            return;
+            return false;
         }
         DWORD remaining = timeoutMs - (DWORD)elapsed;
         if (shim.Available()) {
@@ -3773,6 +3773,8 @@ void PMTraceConsumer::ResetPresentTrackingData(bool shrink) {
     mInterPresentActivity.Reset();
     mNvTraceConsumer.~NVTraceConsumer();
     new (&mNvTraceConsumer) NVTraceConsumer();
+
+    return true;
 }
 
 PMTraceConsumer::EventProcessingScope::EventProcessingScope(PMTraceConsumer& consumer)

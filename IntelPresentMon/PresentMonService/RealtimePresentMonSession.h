@@ -70,6 +70,7 @@ private:
 
     // Event for when streaming has started
     pmon::util::win::Event evtStreamingStarted_;
+    std::mutex frame_latency_stats_mutex_;
     pmon::util::SampleStatistics<double> frameLatencyStatsMs_;
     int64_t frameLatencyStatsWindowStartQpc_ = 0;
 

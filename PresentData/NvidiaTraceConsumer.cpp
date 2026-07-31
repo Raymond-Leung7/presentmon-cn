@@ -37,8 +37,9 @@ void NVTraceConsumer::HandleNvidiaDisplayDriverEvent(EVENT_RECORD* const pEventR
         mLastFlipToken = token;
 
         if (alloc == 0) {
-            assert(!delay);
-            assert(ts);
+            if (ts == 0) {
+                return;
+            }
             // proposedFlipTime in number of ticks
             proposedFlipTime = ts;
             auto t1 = *(uint64_t*)&hdr.TimeStamp;

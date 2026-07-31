@@ -721,9 +721,11 @@ bool PMTraceSession::QueryEtwStatus(EtwStatus* status) const
 void PMTraceSession::ProcessEtwEventLatencyStats(uint64_t eventQpcTimestamp)
 {
     const auto statsEnabled = pmon::util::log::GlobalPolicy::Get().GetLogLevel() >= pmon::util::log::Level::Debug;
+    std::lock_guard<std::mutex> lock(mEtwEventLatencyStatsMutex);
     if (!statsEnabled) {
         if (mEtwEventLatencyStatsWindowStartQpc != 0) {
-            ResetEtwEventLatencyStats();
+            mEtwEventLatencyStatsMs.Reset();
+            mEtwEventLatencyStatsWindowStartQpc = 0;
         }
         return;
     }
@@ -778,6 +780,7 @@ void PMTraceSession::ProcessEtwEventLatencyStats(uint64_t eventQpcTimestamp)
 
 void PMTraceSession::ResetEtwEventLatencyStats()
 {
+    std::lock_guard<std::mutex> lock(mEtwEventLatencyStatsMutex);
     mEtwEventLatencyStatsMs.Reset();
     mEtwEventLatencyStatsWindowStartQpc = 0;
 }

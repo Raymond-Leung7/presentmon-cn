@@ -36,11 +36,14 @@ void RealtimePresentMonSession::StopProvidersAndResetConsumer(bool shrink)
     trace_session_.StopProviders();
 
     if (pm_consumer_) {
-        pm_consumer_->ResetPresentTrackingData(shrink);
+        if (pm_consumer_->ResetPresentTrackingData(shrink)) {
+            ResetFrameLatencyStats_();
+            trace_session_.ResetEtwEventLatencyStats();
+        }
+        else {
+            pmlog_warn("Skipping statistics reset because event processing did not quiesce");
+        }
     }
-
-    ResetFrameLatencyStats_();
-    trace_session_.ResetEtwEventLatencyStats();
 
     evtStreamingStarted_.Reset();
 }
@@ -84,7 +87,12 @@ PM_STATUS RealtimePresentMonSession::UpdateTracking(const std::unordered_set<uin
         // events are accounted for by the quiesce logic on StopStreaming.
         if (pm_consumer_) {
             // Drop any lingering present tracking state from previous streams
-            pm_consumer_->ResetPresentTrackingData(false);
+            if (!pm_consumer_->ResetPresentTrackingData(false)) {
+                pmlog_error("Unable to start tracking because prior event processing did not quiesce");
+                std::lock_guard lock(tracked_processes_mutex_);
+                tracked_pid_live_ = std::move(previousState);
+                return PM_STATUS::PM_STATUS_FAILURE;
+            }
             // Allow event processing before enabling providers
             pm_consumer_->SetEventProcessingEnabled(true);
         }
@@ -285,7 +293,10 @@ void RealtimePresentMonSession::AddPresents(
 
     for (auto n = presentEvents.size(); i < n; ++i) {
         auto& presentEvent = presentEvents[i];
-        assert(presentEvent->IsCompleted);
+        if (!presentEvent || !presentEvent->IsCompleted) {
+            pmlog_warn("Skipping incomplete present event");
+            continue;
+        }
 
         // Ignore failed and lost presents.
         if (presentEvent->IsLost || presentEvent->PresentFailed) {
@@ -338,6 +349,11 @@ void RealtimePresentMonSession::ProcessEtwLatencyLogging_(
         return;
     }
 
+    std::unique_lock<std::mutex> statsLock(frame_latency_stats_mutex_, std::defer_lock);
+    if (etwqStatsEnabled) {
+        statsLock.lock();
+    }
+
     if (etwqVerboseEnabled) {
         pmlog_(util::log::Level::Verbose).note(std::format("Processing [{}] frames", presentEvents.size()));
     }
@@ -349,6 +365,9 @@ void RealtimePresentMonSession::ProcessEtwLatencyLogging_(
     }
 
     for (auto& p : presentEvents) {
+        if (!p) {
+            continue;
+        }
         if (p->PresentStartTime == 0) {
             if (etwqVerboseEnabled) {
                 pmlog_(util::log::Level::Verbose).note(
@@ -422,6 +441,7 @@ void RealtimePresentMonSession::FlushFrameLatencyStatsWindow_(int64_t now, doubl
 
 void RealtimePresentMonSession::ResetFrameLatencyStats_()
 {
+    std::lock_guard<std::mutex> lock(frame_latency_stats_mutex_);
     frameLatencyStatsMs_.Reset();
     frameLatencyStatsWindowStartQpc_ = 0;
 }

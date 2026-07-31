@@ -36,8 +36,10 @@ namespace pmon::svc
     EtwLogger::EtwLogger(bool isElevated)
     {
         try {
+            const auto directoryName = std::format(
+                L"PresentMonServiceEtl-{}-{}", GetCurrentProcessId(), GetTickCount64());
             workDirectory_ = file::SecureSubdirectory::CreateInSystemTemp(
-                L"PresentMonServiceEtl", isElevated, true, true);
+                directoryName, isElevated, true, true);
         }
         catch (...) {
             pmlog_error(ReportException("Failed establishing etw logger work directory"));

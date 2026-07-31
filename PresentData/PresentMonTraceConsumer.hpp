@@ -383,7 +383,7 @@ struct PMTraceConsumer
     // clear internal present tracking state from a controller thread.
     void SetProviderToggleMode(bool enabled);
     void SetEventProcessingEnabled(bool enabled);
-    void ResetPresentTrackingData(bool shrink = false);
+    bool ResetPresentTrackingData(bool shrink = false);
 
     // -------------------------------------------------------------------------------------------
     // The rest of this structure are internal data and functions for analysing the collected ETW

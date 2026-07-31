@@ -4,6 +4,7 @@
 #include "../IntelPresentMon/CommonUtilities/PrecisionWaiter.h"
 #include "../IntelPresentMon/CommonUtilities/SampleStatistics.h"
 #include "IFilterBuildListener.h"
+#include <mutex>
 
 struct PMTraceConsumer;
 
@@ -48,6 +49,7 @@ struct PMTraceSession {
     ULONG mNumBuffersLost = 0;
 
     bool mIsRealtimeSession = false;
+    std::mutex mEtwEventLatencyStatsMutex;
     pmon::util::SampleStatistics<double> mEtwEventLatencyStatsMs;
     int64_t mEtwEventLatencyStatsWindowStartQpc = 0;
 

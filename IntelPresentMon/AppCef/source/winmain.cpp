@@ -15,7 +15,6 @@
 #include <dwmapi.h>
 #include <boost/process.hpp>
 #include <Shobjidl.h>
-#include <ShellScalingApi.h>
 #include <include/cef_version.h>
 #include "util/CefLog.h"
 
@@ -35,6 +34,20 @@ constexpr const char* MessageWindowClassName = "MessageWindowClass";
 constexpr const int quitCefCode = 0xABAD1DEA;
 CefRefPtr<client::cef::NanoCefBrowserClient> pBrowserClient;
 HWND hwndAppMsg = nullptr;
+
+UINT GetInitialWindowDpi()
+{
+    using GetDpiForSystemFunction = UINT(WINAPI*)();
+    const auto user32 = GetModuleHandleW(L"user32.dll");
+    if (user32 != nullptr) {
+        const auto getDpiForSystem = reinterpret_cast<GetDpiForSystemFunction>(
+            GetProcAddress(user32, "GetDpiForSystem"));
+        if (getDpiForSystem != nullptr) {
+            return getDpiForSystem();
+        }
+    }
+    return USER_DEFAULT_SCREEN_DPI;
+}
 
 LRESULT CALLBACK BrowserWindowWndProc(HWND window_handle, UINT message, WPARAM w_param, LPARAM l_param)
 {
@@ -82,6 +95,15 @@ LRESULT CALLBACK BrowserWindowWndProc(HWND window_handle, UINT message, WPARAM w
             }
         }
         break;
+    case WM_DPICHANGED:
+    {
+        const auto rect = reinterpret_cast<const RECT*>(l_param);
+        SetWindowPos(window_handle, nullptr,
+            rect->left, rect->top,
+            rect->right - rect->left, rect->bottom - rect->top,
+            SWP_NOACTIVATE | SWP_NOZORDER);
+        return 0;
+    }
     case WM_ERASEBKGND:
         if (pBrowserClient.get()
             && pBrowserClient->GetBrowser()
@@ -133,10 +155,17 @@ HWND CreateBrowserWindow(HINSTANCE instance_handle, int show_minimize_or_maximiz
     ));
     RegisterClassEx(&wcex);
 
+    const auto dpi = GetInitialWindowDpi();
+    const auto scaleForDpi = [dpi](int value) {
+        return MulDiv(value, (int)dpi, USER_DEFAULT_SCREEN_DPI);
+    };
+
     HWND hwnd = CreateWindow(
         BrowserWindowClassName, "Intel PresentMon",
-        WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, 200, 20,
-        1360, 1020, nullptr, nullptr, instance_handle, nullptr
+        WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
+        scaleForDpi(200), scaleForDpi(20),
+        scaleForDpi(1360), scaleForDpi(1020),
+        nullptr, nullptr, instance_handle, nullptr
     );
 
     BOOL useDarkMode = TRUE;
@@ -207,9 +236,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     // set the app id so that windows get grouped
     SetCurrentProcessExplicitAppUserModelID(L"Intel.PresentMon");
-
-    // disable DPI scaling
-    SetProcessDpiAwareness(PROCESS_DPI_UNAWARE);
 
     try {
         using namespace client;

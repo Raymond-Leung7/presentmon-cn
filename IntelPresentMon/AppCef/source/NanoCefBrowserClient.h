@@ -3,6 +3,7 @@
 #pragma once
 #include <CommonUtilities/win/WinAPI.h>
 #include <include/cef_client.h>
+#include <include/cef_keyboard_handler.h>
 #include <semaphore>
 #include <memory>
 #include <optional>
@@ -14,13 +15,15 @@ namespace p2c::client::cef
     class NanoCefBrowserClient :
         public CefClient,
         public CefLifeSpanHandler,
-        public CefDisplayHandler
+        public CefDisplayHandler,
+        public CefKeyboardHandler
     {
     public:
         NanoCefBrowserClient();
         CefRefPtr<CefBrowser> GetBrowser();
         CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override;
         CefRefPtr<CefDisplayHandler> GetDisplayHandler() override;
+        CefRefPtr<CefKeyboardHandler> GetKeyboardHandler() override;
         void OnAfterCreated(CefRefPtr<CefBrowser> browser_) override;
         void OnBeforeClose(CefRefPtr<CefBrowser> browser_) override;
         bool OnProcessMessageReceived(
@@ -35,6 +38,11 @@ namespace p2c::client::cef
             const CefString& message,
             const CefString& source,
             int line) override;
+        bool OnPreKeyEvent(
+            CefRefPtr<CefBrowser> browser,
+            const CefKeyEvent& event,
+            CefEventHandle os_event,
+            bool* is_keyboard_shortcut) override;
 
     protected:
         CefRefPtr<CefContextMenuHandler> pContextMenuHandler;

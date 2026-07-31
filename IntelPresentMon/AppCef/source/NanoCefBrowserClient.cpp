@@ -50,6 +50,23 @@ namespace p2c::client::cef
         return this;
     }
 
+    CefRefPtr<CefKeyboardHandler> NanoCefBrowserClient::GetKeyboardHandler()
+    {
+        return this;
+    }
+
+    bool NanoCefBrowserClient::OnPreKeyEvent(
+        CefRefPtr<CefBrowser> browser,
+        const CefKeyEvent& event,
+        CefEventHandle os_event,
+        bool* is_keyboard_shortcut)
+    {
+        if (event.windows_key_code == VK_F1) {
+            return true;
+        }
+        return false;
+    }
+
     void NanoCefBrowserClient::OnAfterCreated(CefRefPtr<CefBrowser> browser_)
     {
         pBrowser = browser_;

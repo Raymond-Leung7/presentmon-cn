@@ -22,19 +22,32 @@ namespace p2c::gfx
         enableAlpha{ enableAlpha }
 	{
         // Direct3D 11 stuff
-        if (auto hr = D3D11CreateDevice(
+        bool debugLayersEnabled = IS_DEBUG;
+        const auto createDevice = [&](UINT flags) {
+            return D3D11CreateDevice(
             nullptr,    // Adapter
             D3D_DRIVER_TYPE_HARDWARE,
             nullptr,    // Module
-            D3D11_CREATE_DEVICE_BGRA_SUPPORT | (IS_DEBUG ? D3D11_CREATE_DEVICE_DEBUG : 0),
+            flags,
             nullptr, 0, // Highest available feature level
             D3D11_SDK_VERSION,
             &pDevice,
             nullptr,    // Actual feature level
             &pContext3d// Device context
-        ); FAILED(hr))
-        {
+            );
+        };
+        auto deviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT |
+            (debugLayersEnabled ? D3D11_CREATE_DEVICE_DEBUG : 0);
+        auto hr = createDevice(deviceFlags);
+        if (hr == DXGI_ERROR_SDK_COMPONENT_MISSING && debugLayersEnabled) {
+            pmlog_warn("Direct3D debug layer unavailable; continuing without it").hr(hr);
+            debugLayersEnabled = false;
+            deviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+            hr = createDevice(deviceFlags);
+        }
+        if (FAILED(hr)) {
             pmlog_error().hr(hr);
+            throw Except<GraphicsException>();
         }
 
         ComPtr<IDXGIDevice> pDxgiDevice;
@@ -44,12 +57,20 @@ namespace p2c::gfx
         }
 
         ComPtr<IDXGIFactory2> pDxgiFactory;
-        if (auto hr = CreateDXGIFactory2(
-            IS_DEBUG ? DXGI_CREATE_FACTORY_DEBUG : 0,
+        auto factoryFlags = debugLayersEnabled ? DXGI_CREATE_FACTORY_DEBUG : 0;
+        hr = CreateDXGIFactory2(
+            factoryFlags,
             IID_PPV_ARGS(&pDxgiFactory)
-        ); FAILED(hr))
-        {
+        );
+        if (hr == DXGI_ERROR_SDK_COMPONENT_MISSING && debugLayersEnabled) {
+            pmlog_warn("DXGI debug layer unavailable; continuing without it").hr(hr);
+            debugLayersEnabled = false;
+            factoryFlags = 0;
+            hr = CreateDXGIFactory2(factoryFlags, IID_PPV_ARGS(&pDxgiFactory));
+        }
+        if (FAILED(hr)) {
             pmlog_error().hr(hr);
+            throw Except<GraphicsException>();
         }
 
         if (enableTearing) {
@@ -156,7 +177,7 @@ namespace p2c::gfx
         // Create a single-threaded Direct2D factory with debugging information
         if (auto hr = D2D1CreateFactory(
             D2D1_FACTORY_TYPE_SINGLE_THREADED,
-            IS_DEBUG ? D2D1_FACTORY_OPTIONS{ D2D1_DEBUG_LEVEL_INFORMATION } : D2D1_FACTORY_OPTIONS{},
+            debugLayersEnabled ? D2D1_FACTORY_OPTIONS{ D2D1_DEBUG_LEVEL_INFORMATION } : D2D1_FACTORY_OPTIONS{},
             pFactory2d.GetAddressOf()
         ); FAILED(hr))
         {

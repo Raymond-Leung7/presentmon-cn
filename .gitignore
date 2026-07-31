@@ -8,6 +8,13 @@ PresentMon/build/
 # Claude Code
 .claude/
 
+# Codex local working data
+/.codex-tmp/
+
+# Local component build outputs
+/IntelPresentMon/CommonUtilities/build/
+/PresentData/build/
+
 # Accidental nul file from Windows commands
 PresentMon/nul
 

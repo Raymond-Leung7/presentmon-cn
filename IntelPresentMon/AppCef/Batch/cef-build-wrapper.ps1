@@ -57,6 +57,12 @@ if (-not $vsRoot) { Write-Error "No Visual Studio with MSBuild found"; exit 1 }
 $vcvars = Join-Path $vsRoot "VC\Auxiliary\Build\vcvarsall.bat"
 if (-not (Test-Path $vcvars)) { Write-Error "vcvarsall.bat not found"; exit 1 }
 Write-Host "Using vcvarsall.bat at: $vcvars`n"
+$cmake = Join-Path $vsRoot "Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe"
+if (-not (Test-Path $cmake)) {
+    $cmakeCommand = Get-Command cmake.exe -ErrorAction SilentlyContinue
+    if (-not $cmakeCommand) { Write-Error "cmake.exe not found"; exit 1 }
+    $cmake = $cmakeCommand.Source
+}
 
 # Make build dir & enter
 Write-Host "Creating build directory at $buildDir"
@@ -66,12 +72,12 @@ Push-Location $buildDir
 # Settings
 $Arch      = "x64"
 $Platform  = "x64"
-$Generator = "Visual Studio 17"
+$Generator = "Visual Studio 17 2022"
 $Solution  = Join-Path $buildDir "cef.sln"
 
 # 1) Configure with CMake (no vcvars needed)
 Write-Host "Running CMake configure..."
-cmake -G "$Generator" -A $Platform -DUSE_SANDBOX=OFF "$RedistPath"
+& $cmake -G "$Generator" -A $Platform -DUSE_SANDBOX=OFF "$RedistPath"
 if ($LASTEXITCODE -ne 0) {
     Write-Error "CMake configuration failed (exit code $LASTEXITCODE)"; Pop-Location; exit $LASTEXITCODE
 }

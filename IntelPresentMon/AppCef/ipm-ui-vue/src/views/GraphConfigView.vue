@@ -4,6 +4,7 @@ import ColorPicker from '@/components/ColorPicker.vue';
 import { asGraph, WidgetType as WidgetTypeEnum } from '@/core/widget';
 import { useLoadoutStore } from '@/stores/loadout';
 import { usePreferencesStore } from '@/stores/preferences';
+import { zhCN } from '@/locales/zh-CN';
 
 defineOptions({ name: 'GraphConfigView' });
 
@@ -68,21 +69,21 @@ const typeCountRangeTextMax = computed({
   <div class="page-wrap">
     <h2 class="mt-5 ml-5 link-head" @click="$router.back()">
       <v-icon style="vertical-align: 0" color="inherit">mdi-chevron-left</v-icon>
-      Detailed Graph Configuration
+      {{ zhCN.graph.title }}
     </h2>
 
     <v-card class="page-card my-7">
-      <v-card-title class="mt-0 text-medium-emphasis">Graph Settings</v-card-title>
+      <v-card-title class="mt-0 text-medium-emphasis">{{ zhCN.graph.graphSettings }}</v-card-title>
       <v-divider class="ma-0"></v-divider>
 
       <v-row class="mt-8">
         <v-col v-if="typeName !== 'Line'" cols="3">
-          Value Range
-          <p class="text-medium-emphasis text-caption mb-0">Range of metric values for the bins this histogram</p>
+          {{ zhCN.graph.valueRange }}
+          <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.graph.valueRangeHelp }}</p>
         </v-col>
         <v-col v-else cols="3">
-          Left Value Range
-          <p class="text-medium-emphasis text-caption mb-0">Range of metric values to be displayed by the left axis of this graph</p>
+          {{ zhCN.graph.leftValueRange }}
+          <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.graph.leftValueRangeHelp }}</p>
         </v-col>
         <v-col cols="9">
           <v-row dense>
@@ -117,12 +118,12 @@ const typeCountRangeTextMax = computed({
 
       <v-row class="mt-3">
         <v-col v-if="typeName !== 'Line'" cols="3">
-          Autoscale Range
-          <p class="text-medium-emphasis text-caption mb-0">Automatically adjust the range of values for the bins this histogram</p>
+          {{ zhCN.graph.autoscaleRange }}
+          <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.graph.autoscaleRangeHelp }}</p>
         </v-col>
         <v-col v-else cols="3">
-          Autoscale Left
-          <p class="text-medium-emphasis text-caption mb-0">Automatically adjust the range of the left y-axis</p>
+          {{ zhCN.graph.autoscaleLeft }}
+          <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.graph.autoscaleLeftHelp }}</p>
         </v-col>
         <v-col cols="9">
           <v-switch v-model="graphType.autoLeft" hide-details></v-switch>
@@ -131,8 +132,8 @@ const typeCountRangeTextMax = computed({
 
       <v-row v-if="typeName === 'Line'" class="mt-8">
         <v-col cols="3">
-          Right Value Range
-          <p class="text-medium-emphasis text-caption mb-0">Range of metric values to be displayed by the right axis of this graph</p>
+          {{ zhCN.graph.rightValueRange }}
+          <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.graph.rightValueRangeHelp }}</p>
         </v-col>
         <v-col cols="9">
           <v-row dense>
@@ -167,8 +168,8 @@ const typeCountRangeTextMax = computed({
 
       <v-row v-if="typeName === 'Line'" class="mt-3">
         <v-col cols="3">
-          Autoscale Right
-          <p class="text-medium-emphasis text-caption mb-0">Automatically adjust the range of the right y-axis</p>
+          {{ zhCN.graph.autoscaleRight }}
+          <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.graph.autoscaleRightHelp }}</p>
         </v-col>
         <v-col cols="9">
           <v-switch v-model="graphType.autoRight" hide-details></v-switch>
@@ -178,8 +179,8 @@ const typeCountRangeTextMax = computed({
       <div v-show="typeName === 'Histogram'">
         <v-row class="mt-8">
           <v-col cols="3">
-            Number of Bins
-            <p class="text-medium-emphasis text-caption mb-0">Number of bins (bars) in histogram</p>
+            {{ zhCN.graph.numberOfBins }}
+            <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.graph.numberOfBinsHelp }}</p>
           </v-col>
           <v-col cols="9">
             <v-slider
@@ -194,8 +195,8 @@ const typeCountRangeTextMax = computed({
 
         <v-row class="mt-8">
           <v-col cols="3">
-            Count Range
-            <p class="text-medium-emphasis text-caption mb-0">Range of bin counts displayed by this histogram</p>
+            {{ zhCN.graph.countRange }}
+            <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.graph.countRangeHelp }}</p>
           </v-col>
           <v-col cols="9">
             <v-row dense>
@@ -230,8 +231,8 @@ const typeCountRangeTextMax = computed({
 
         <v-row v-if="typeName !== 'Line'" class="mt-3">
           <v-col cols="3">
-            Autoscale Count
-            <p class="text-medium-emphasis text-caption mb-0">Automatically adjust the range of bin counts</p>
+            {{ zhCN.graph.autoscaleCount }}
+            <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.graph.autoscaleCountHelp }}</p>
           </v-col>
           <v-col cols="9">
             <v-switch v-model="graphType.autoCount" hide-details></v-switch>
@@ -240,16 +241,16 @@ const typeCountRangeTextMax = computed({
 
         <v-row v-if="typeName !== 'Line'" class="mt-3">
           <v-col cols="3">
-            Total Count
-            <p class="text-medium-emphasis text-caption mb-0">Total expected data points being counted into bins</p>
+            {{ zhCN.graph.totalCount }}
+            <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.graph.totalCountHelp }}</p>
           </v-col>
           <v-col cols="9">
             <p class="text-medium-emphasis text-caption">
-              The total count of data points displayed is controlled by <span style="color: orange;">Time Scale</span>
-              (<router-link class="app-link" :to="{name: 'overlay-config'}">Settings>Overlay</router-link>) multiplied by <span style="color: orange;">Metric Poll Rate</span>
-              (<router-link class="app-link" :to="{name: 'data-config'}">Settings>Data Processing</router-link>). <br> Currently it is
+              {{ zhCN.graph.totalCountPrefix }} <span style="color: orange;">{{ zhCN.graph.timeScale }}</span>
+              （<router-link class="app-link" :to="{name: 'overlay-config'}">{{ zhCN.graph.settingsOverlay }}</router-link>）{{ zhCN.graph.multipliedBy }} <span style="color: orange;">{{ zhCN.graph.metricPollRate }}</span>
+              （<router-link class="app-link" :to="{name: 'data-config'}">{{ zhCN.graph.settingsData }}</router-link>）。<br>{{ zhCN.graph.currentValue }}
               <span style="color: green;">{{ prefs.preferences.timeRange }}s</span> * <span style="color: green;">
-                {{ prefs.preferences.metricPollRate }}Hz</span> = <span style="color: violet;">{{ totalCount }}</span> data points.
+                {{ prefs.preferences.metricPollRate }}Hz</span> = <span style="color: violet;">{{ totalCount }}</span> {{ zhCN.graph.dataPoints }}。
             </p>
           </v-col>
         </v-row>
@@ -257,25 +258,25 @@ const typeCountRangeTextMax = computed({
     </v-card>
 
     <v-card v-if="suffixesEnabled" class="page-card my-7">
-      <v-card-title class="mt-0 text-medium-emphasis">Metric Line Labels</v-card-title>
+      <v-card-title class="mt-0 text-medium-emphasis">{{ zhCN.graph.metricLineLabels }}</v-card-title>
       <v-divider class="ma-0"></v-divider>
 
       <v-row class="mt-3">
         <v-col cols="3">
-          Suffixes
-          <p class="text-medium-emphasis text-caption mb-0">Optionally label device id and name on all lines in this graph</p>
+          {{ zhCN.graph.suffixes }}
+          <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.graph.suffixesHelp }}</p>
         </v-col>
         <v-col cols="9" class="d-flex align-center flex-wrap ga-4">
           <v-checkbox
             v-model="graph.labelIncludeDeviceId"
-            label="Device ID"
+            :label="zhCN.common.deviceId"
             hide-details
             density="compact"
             color="primary"
           ></v-checkbox>
           <v-checkbox
             v-model="graph.labelIncludeDeviceName"
-            label="Device name"
+            :label="zhCN.common.deviceName"
             hide-details
             density="compact"
             color="primary"
@@ -285,13 +286,13 @@ const typeCountRangeTextMax = computed({
     </v-card>
 
     <v-card class="page-card my-7">
-      <v-card-title class="mt-0 text-medium-emphasis">Style Settings</v-card-title>
+      <v-card-title class="mt-0 text-medium-emphasis">{{ zhCN.common.styleSettings }}</v-card-title>
       <v-divider class="ma-0"></v-divider>
 
       <v-row class="mt-5">
         <v-col cols="3">
-          Graph Height
-          <p class="text-medium-emphasis text-caption mb-0">Vertical size of the graph</p>
+          {{ zhCN.graph.graphHeight }}
+          <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.graph.graphHeightHelp }}</p>
         </v-col>
         <v-col cols="9">
           <v-slider
@@ -306,8 +307,8 @@ const typeCountRangeTextMax = computed({
 
       <v-row class="mt-8">
         <v-col cols="3">
-          Grid Vertical
-          <p class="text-medium-emphasis text-caption mb-0">Number of vertical divisions in the grid</p>
+          {{ zhCN.graph.gridVertical }}
+          <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.graph.gridVerticalHelp }}</p>
         </v-col>
         <v-col cols="9">
           <v-slider
@@ -322,8 +323,8 @@ const typeCountRangeTextMax = computed({
 
       <v-row class="mt-8">
         <v-col cols="3">
-          Grid Horizontal
-          <p class="text-medium-emphasis text-caption mb-0">Number of horizontal divisions in the grid</p>
+          {{ zhCN.graph.gridHorizontal }}
+          <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.graph.gridHorizontalHelp }}</p>
         </v-col>
         <v-col cols="9">
           <v-slider
@@ -338,8 +339,8 @@ const typeCountRangeTextMax = computed({
 
       <v-row class="mt-8">
         <v-col cols="3">
-          Font Size
-          <p class="text-medium-emphasis text-caption mb-0">Size of text in this readout widget</p>
+          {{ zhCN.common.fontSize }}
+          <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.graph.fontSizeHelp }}</p>
         </v-col>
         <v-col cols="9">
           <v-slider
@@ -355,19 +356,19 @@ const typeCountRangeTextMax = computed({
 
       <v-row class="mt-8">
         <v-col cols="3">
-          Colors
-          <p class="text-medium-emphasis text-caption mb-0">Colors of various elements of the graph</p>
+          {{ zhCN.common.colors }}
+          <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.graph.colorsHelp }}</p>
         </v-col>
         <v-col cols="9">
           <v-row dense>
             <v-col cols="4">
-              <color-picker v-model="graph.gridColor" class="color-picker" label="Grid"></color-picker>
+              <color-picker v-model="graph.gridColor" class="color-picker" :label="zhCN.common.grid"></color-picker>
             </v-col>
             <v-col cols="4">
-              <color-picker v-model="graph.backgroundColor" class="color-picker" label="Background"></color-picker>
+              <color-picker v-model="graph.backgroundColor" class="color-picker" :label="zhCN.common.background"></color-picker>
             </v-col>
             <v-col cols="4">
-              <color-picker v-model="graph.textColor" class="color-picker" label="Text"></color-picker>
+              <color-picker v-model="graph.textColor" class="color-picker" :label="zhCN.common.text"></color-picker>
             </v-col>
           </v-row>
         </v-col>

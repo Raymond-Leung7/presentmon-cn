@@ -5,6 +5,7 @@ import { createPinia } from 'pinia'
 
 // Vuetify
 import { createVuetify } from 'vuetify'
+import { zhHans } from 'vuetify/locale'
 import 'vuetify/styles'
 // css
 import '@mdi/font/css/materialdesignicons.css'
@@ -28,6 +29,11 @@ if (isDevBuild()) {
 
 const vuetify = createVuetify({
     blueprint: md2,
+    locale: {
+        locale: 'zhHans',
+        fallback: 'en',
+        messages: { zhHans },
+    },
     theme: {
         defaultTheme: 'customDark',
         themes: {

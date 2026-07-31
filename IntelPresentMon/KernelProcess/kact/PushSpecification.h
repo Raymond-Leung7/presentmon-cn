@@ -47,12 +47,14 @@ namespace ACT_NS
         struct WidgetMetric
         {
             Metric metric;
+            std::string displayName;
             Color lineColor;
             Color fillColor;
             ::p2c::gfx::lay::AxisAffinity axisAffinity;
 
             template<class A> void serialize(A& ar) {
                 ar(CEREAL_NVP(metric),
+                    CEREAL_NVP(displayName),
                     CEREAL_NVP(lineColor),
                     CEREAL_NVP(fillColor),
                     CEREAL_NVP(axisAffinity));

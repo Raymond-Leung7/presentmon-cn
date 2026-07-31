@@ -56,7 +56,7 @@ namespace p2c::kern
                                 auto metInfo = fetcherFactory.GetMetricInfo(gms.metric, {
                                     .includeDeviceId = pGraphSpec->labelIncludeDeviceId,
                                     .includeDeviceName = pGraphSpec->labelIncludeDeviceName,
-                                });
+                                }, gms.displayName);
                                 return std::make_shared<GraphLinePack>(GraphLinePack{
                                     .data = mapper[gms.metric].graphData,
                                     .axisAffinity = gms.axisAffinity,
@@ -79,7 +79,7 @@ namespace p2c::kern
                         auto metInfo = fetcherFactory.GetMetricInfo(pReadoutSpec->metric, {
                             .includeDeviceId = pReadoutSpec->labelIncludeDeviceId,
                             .includeDeviceName = pReadoutSpec->labelIncludeDeviceName,
-                        });
+                        }, pReadoutSpec->displayName);
                         pReadoutContainer->AddChild(gfx::lay::ReadoutElement::Make(
                             metInfo.isNonNumeric, std::move(metInfo.fullName), std::move(metInfo.unitLabel),
                             mapper[pReadoutSpec->metric].textData.get(), { pReadoutSpec->tag }
@@ -97,7 +97,7 @@ namespace p2c::kern
             // capture state indicator
             pRoot->AddChild(FlexElement::Make(
                 {
-                    TextElement::Make(L"Capture Status:", {"label"}),
+                    TextElement::Make(L"\u6355\u83B7\u72B6\u6001\uFF1A", {"label"}),
                     captureIndicator = TextElement::Make(L"-------------------", {"value"}),
                 },
                 { "cap" }
@@ -418,10 +418,10 @@ namespace p2c::kern
         if (!pWindow) return;
 
         if (pWriter) {
-            pCaptureIndicatorText->SetText(L"In Progress");
+            pCaptureIndicatorText->SetText(L"\u6B63\u5728\u6355\u83B7");
         }
         else {
-            pCaptureIndicatorText->SetText(L"Standing By");
+            pCaptureIndicatorText->SetText(L"\u7B49\u5F85\u4E2D");
         }
     }
 

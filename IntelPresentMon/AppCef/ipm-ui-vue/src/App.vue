@@ -10,8 +10,10 @@ import { Action } from './core/hotkey';
 import { useProcessesStore } from './stores/processes';
 import { useNotificationsStore } from './stores/notifications';
 import { dispatchDelayedTask } from './core/timing';
+import { zhCN } from './locales/zh-CN';
 
 const route = useRoute()
+const t = zhCN.app;
 
 // === State ===
 interface ErrorMessage {
@@ -53,11 +55,11 @@ const targetName = computed(() => {
 });
 const visibilityString = computed(() => {
   if (prefs.preferences.hideAlways) {
-    return 'Hidden';
+    return t.hidden;
   } else if (prefs.preferences.hideDuringCapture && prefs.capturing) {
-    return "(Auto)Hidden";
+    return t.autoHidden;
   } else if (prefs.preferences.hideDuringCapture && !prefs.capturing) {
-    return "Autohide";
+    return t.autoHide;
   } else {
     return '';
   }
@@ -65,7 +67,7 @@ const visibilityString = computed(() => {
 const errorDialogActive = computed(() => dialogError.value !== null);
 const notificationMoreText = computed(() => {
   if (notes.count > 1) {
-    return `[${notes.count} more...]`;
+    return t.moreNotifications(notes.count);
   }
   return '';
 });
@@ -95,18 +97,18 @@ Api.registerHotkeyHandler((action: number) => {
 })
 Api.registerPresentmonInitFailedHandler(() => {
   dialogError.value = {
-    title: 'PresentMon Initialization Error',
-    text: 'Failed to initialize PresentMon API. Ensure that PresentMon Service is installed and running, and try again.',
+    title: t.initErrorTitle,
+    text: t.initErrorText,
   }
   console.error('received presentmon init failed signal')
 })
 Api.registerOverlayDiedHandler(() => {
-  notes.notify({text: 'Error: overlay crashed unexpectedly'});
+  notes.notify({text: t.overlayCrashed});
   prefs.pid = null
   console.error('received overlay died signal');
 })
 Api.registerStalePidHandler(() => {
-  notes.notify({text: 'Selected process has already exited.'});
+  notes.notify({text: t.processExited});
   prefs.pid = null
   console.warn('received stale pid signal');
 })
@@ -117,13 +119,13 @@ watchEffect(async () => {
   const selectedPreset = prefs.preferences.selectedPreset
   if (selectedPreset === Preset.Custom) {
     const {payload} = await Api.loadConfig('custom-auto.json');
-    const err = 'Failed to load autosave loadout file. ';
+    const err = t.loadAutosaveFailed;
     await loadout.loadConfigFromPayload(payload, err);
   }
   else if (selectedPreset !== null) {
     const presetFileName = `preset-${selectedPreset}.json`;
     const {payload} = await Api.loadPreset(presetFileName);
-    const err = `Failed to load preset file [${presetFileName}]. `;
+    const err = t.loadPresetFailed(presetFileName);
     await loadout.loadConfigFromPayload(payload, err);
   }
 })
@@ -161,26 +163,26 @@ watch(() => loadout.widgets, async () => {
           class="custom-drawer pt-3"
         >
           <router-link :to="{ name: 'main' }" class="nav-back">
-            <v-icon class="nav-back-arrow">mdi-arrow-left</v-icon> Top
+            <v-icon class="nav-back-arrow">mdi-arrow-left</v-icon> {{ t.top }}
           </router-link>
           <v-list nav>
             <v-list-item color="primary" :to="{ name: 'overlay-config' }">
-              <v-list-item-title class="nav-item">Overlay</v-list-item-title>
+              <v-list-item-title class="nav-item">{{ t.overlay }}</v-list-item-title>
             </v-list-item>
             <v-list-item color="primary" :to="{ name: 'data-config' }">
-              <v-list-item-title class="nav-item">Data</v-list-item-title>
+              <v-list-item-title class="nav-item">{{ t.data }}</v-list-item-title>
             </v-list-item>
             <v-list-item color="primary" :to="{ name: 'capture-config' }">
-              <v-list-item-title class="nav-item">Capture</v-list-item-title>
+              <v-list-item-title class="nav-item">{{ t.capture }}</v-list-item-title>
             </v-list-item>
             <v-list-item color="primary" :to="{ name: 'logging-config' }">
-              <v-list-item-title class="nav-item">Logging</v-list-item-title>
+              <v-list-item-title class="nav-item">{{ t.logging }}</v-list-item-title>
             </v-list-item>
             <v-list-item color="primary" :to="{ name: 'other-config' }">
-              <v-list-item-title class="nav-item">Other</v-list-item-title>
+              <v-list-item-title class="nav-item">{{ t.other }}</v-list-item-title>
             </v-list-item>
             <v-list-item color="primary" :to="{ name: 'about-config' }">
-              <v-list-item-title class="nav-item">About</v-list-item-title>
+              <v-list-item-title class="nav-item">{{ t.about }}</v-list-item-title>
             </v-list-item>
           </v-list>
         </v-navigation-drawer>

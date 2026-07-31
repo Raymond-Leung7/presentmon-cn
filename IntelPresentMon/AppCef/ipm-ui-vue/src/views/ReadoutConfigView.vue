@@ -7,6 +7,7 @@ import ColorPicker from '@/components/ColorPicker.vue';
 import { asReadout, type Widget } from '@/core/widget';
 import { useLoadoutStore } from '@/stores/loadout';
 import { usePreferencesStore } from '@/stores/preferences';
+import { zhCN } from '@/locales/zh-CN';
 
 defineOptions({ name: 'WidgetConfig' });
 
@@ -27,17 +28,17 @@ const suffixesEnabled = computed(() => prefs.preferences.enablePerMetricDeviceSe
     <div class="page-wrap">
       <h2 class="mt-5 ml-5 link-head" @click="$router.back()">
           <v-icon style="vertical-align: 0" color="inherit">mdi-chevron-left</v-icon>
-          Detailed Readout Configuration
+          {{ zhCN.readout.title }}
       </h2>
     
       <v-card class="page-card my-7">
-        <v-card-title class="mt-0 text-medium-emphasis">Style Settings</v-card-title>
+        <v-card-title class="mt-0 text-medium-emphasis">{{ zhCN.common.styleSettings }}</v-card-title>
         <v-divider class="ma-0"></v-divider>
         
         <v-row class="mt-8">       
           <v-col cols="3">
-            Font Size
-            <p class="text-medium-emphasis text-caption mb-0">Size of text in this readout widget</p>
+            {{ zhCN.common.fontSize }}
+            <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.readout.fontSizeHelp }}</p>
           </v-col>
           <v-col cols="9">
             <v-slider
@@ -52,16 +53,16 @@ const suffixesEnabled = computed(() => prefs.preferences.enablePerMetricDeviceSe
       
         <v-row class="mt-8">       
           <v-col cols="3">
-            Colors
-            <p class="text-medium-emphasis text-caption mb-0">Colors of various elements of the widget</p>
+            {{ zhCN.common.colors }}
+            <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.readout.colorsHelp }}</p>
           </v-col>
           <v-col cols="9">
             <v-row dense>
               <v-col cols="6">
-                <color-picker v-model="readout.fontColor" class="color-picker" label="Text"></color-picker>
+                <color-picker v-model="readout.fontColor" class="color-picker" :label="zhCN.common.text"></color-picker>
               </v-col>
               <v-col cols="6">
-                <color-picker v-model="readout.backgroundColor" class="color-picker" label="Background"></color-picker>
+                <color-picker v-model="readout.backgroundColor" class="color-picker" :label="zhCN.common.background"></color-picker>
               </v-col>
             </v-row>
           </v-col>
@@ -69,30 +70,30 @@ const suffixesEnabled = computed(() => prefs.preferences.enablePerMetricDeviceSe
     
         <v-row class="mt-3">       
           <v-col cols="3">
-            Show Label
-            <p class="text-medium-emphasis text-caption mb-0">Show label for this readout widget</p>
+            {{ zhCN.readout.showLabel }}
+            <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.readout.showLabelHelp }}</p>
           </v-col>
           <v-col cols="9">
-            <v-switch v-model="readout.showLabel" hide-details label="Show"></v-switch>
+            <v-switch v-model="readout.showLabel" hide-details :label="zhCN.common.show"></v-switch>
           </v-col>
         </v-row>
 
         <v-row v-if="suffixesEnabled" class="mt-3">
           <v-col cols="3">
-            Suffixes
-            <p class="text-medium-emphasis text-caption mb-0">Optionally label device id and name</p>
+            {{ zhCN.readout.suffixes }}
+            <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.readout.suffixesHelp }}</p>
           </v-col>
           <v-col cols="9" class="d-flex align-center flex-wrap ga-4">
             <v-checkbox
               v-model="readout.labelIncludeDeviceId"
-              label="Device ID"
+              :label="zhCN.common.deviceId"
               hide-details
               density="compact"
               color="primary"
             ></v-checkbox>
             <v-checkbox
               v-model="readout.labelIncludeDeviceName"
-              label="Device name"
+              :label="zhCN.common.deviceName"
               hide-details
               density="compact"
               color="primary"

@@ -7,6 +7,7 @@ import { Api } from '@/core/api';
 import { signature as preferencesSignature } from '@/core/preferences';
 import { signature as loadoutSignature } from '@/core/loadout';
 import { type AppInfo } from '@/core/app-info';
+import { zhCN } from '@/locales/zh-CN';
 
 interface InfoRow {
   label: string;
@@ -19,7 +20,7 @@ const appInfo = ref<AppInfo|null>(null);
 const errorMessage = ref('');
 
 function boolText(value: boolean): string {
-  return value ? 'Yes' : 'No';
+  return value ? zhCN.common.yes : zhCN.common.no;
 }
 
 const applicationRows = computed<InfoRow[]>(() => {
@@ -27,17 +28,17 @@ const applicationRows = computed<InfoRow[]>(() => {
     return [];
   }
   return [
-    { label: 'Product', value: appInfo.value.productName },
-    { label: 'Product Version', value: appInfo.value.productVersion },
-    { label: 'API Version', value: appInfo.value.apiVersion },
-    { label: 'Middleware API Version', value: appInfo.value.middlewareApiVersion },
-    { label: 'Preferences Format', value: preferencesSignature.version },
-    { label: 'Loadout Format', value: loadoutSignature.version },
-    { label: 'UI Dev Mode', value: boolText(appInfo.value.devModeEnabled) },
-    { label: 'Chromium Debugging', value: boolText(appInfo.value.chromiumDebugEnabled) },
-    { label: 'Debug Blocklist', value: boolText(appInfo.value.debugBlocklistEnabled) },
-    { label: 'Log Level', value: appInfo.value.logLevel },
-    { label: 'Verbose Modules', value: appInfo.value.verboseModules },
+    { label: zhCN.about.product, value: appInfo.value.productName },
+    { label: zhCN.about.productVersion, value: appInfo.value.productVersion },
+    { label: zhCN.about.apiVersion, value: appInfo.value.apiVersion },
+    { label: zhCN.about.middlewareApiVersion, value: appInfo.value.middlewareApiVersion },
+    { label: zhCN.about.preferencesFormat, value: preferencesSignature.version },
+    { label: zhCN.about.loadoutFormat, value: loadoutSignature.version },
+    { label: zhCN.about.uiDevMode, value: boolText(appInfo.value.devModeEnabled) },
+    { label: zhCN.about.chromiumDebugging, value: boolText(appInfo.value.chromiumDebugEnabled) },
+    { label: zhCN.about.debugBlocklist, value: boolText(appInfo.value.debugBlocklistEnabled) },
+    { label: zhCN.about.logLevel, value: appInfo.value.logLevel },
+    { label: zhCN.about.verboseModules, value: appInfo.value.verboseModules },
   ];
 });
 
@@ -46,11 +47,11 @@ const buildRows = computed<InfoRow[]>(() => {
     return [];
   }
   return [
-    { label: 'Git Hash', value: appInfo.value.buildHash },
-    { label: 'Short Hash', value: appInfo.value.buildHashShort },
-    { label: 'Build Date/Time', value: appInfo.value.buildDateTime },
-    { label: 'Build Config', value: appInfo.value.buildConfig },
-    { label: 'Dirty Build', value: boolText(appInfo.value.buildDirty) },
+    { label: zhCN.about.gitHash, value: appInfo.value.buildHash },
+    { label: zhCN.about.shortHash, value: appInfo.value.buildHashShort },
+    { label: zhCN.about.buildDateTime, value: appInfo.value.buildDateTime },
+    { label: zhCN.about.buildConfig, value: appInfo.value.buildConfig },
+    { label: zhCN.about.dirtyBuild, value: boolText(appInfo.value.buildDirty) },
   ];
 });
 
@@ -59,9 +60,9 @@ const serviceRows = computed<InfoRow[]>(() => {
     return [];
   }
   return [
-    { label: 'Service Build ID', value: appInfo.value.serviceBuildId },
-    { label: 'Service Build Time', value: appInfo.value.serviceBuildTime },
-    { label: 'Service Version', value: appInfo.value.serviceVersion },
+    { label: zhCN.about.serviceBuildId, value: appInfo.value.serviceBuildId },
+    { label: zhCN.about.serviceBuildTime, value: appInfo.value.serviceBuildTime },
+    { label: zhCN.about.serviceVersion, value: appInfo.value.serviceVersion },
   ];
 });
 
@@ -70,11 +71,11 @@ const runtimeRows = computed<InfoRow[]>(() => {
     return [];
   }
   return [
-    { label: 'CEF Version', value: appInfo.value.cefVersion },
-    { label: 'MSVC Version', value: appInfo.value.msvcVersion },
-    { label: 'Windows SDK', value: appInfo.value.winSdkVersion },
-    { label: 'CRT Version', value: appInfo.value.crtVersion },
-    { label: 'CRT Runtime', value: appInfo.value.crtRuntime },
+    { label: zhCN.about.cefVersion, value: appInfo.value.cefVersion },
+    { label: zhCN.about.msvcVersion, value: appInfo.value.msvcVersion },
+    { label: zhCN.about.windowsSdk, value: appInfo.value.winSdkVersion },
+    { label: zhCN.about.crtVersion, value: appInfo.value.crtVersion },
+    { label: zhCN.about.crtRuntime, value: appInfo.value.crtRuntime },
   ];
 });
 
@@ -91,7 +92,7 @@ onMounted(async () => {
 <template>
   <div class="page-wrap">
     <h2 class="mt-5 ml-5 header-top">
-      About
+      {{ zhCN.about.title }}
     </h2>
 
     <v-card class="page-card">
@@ -102,7 +103,7 @@ onMounted(async () => {
       </v-alert>
 
       <template v-if="appInfo !== null">
-        <v-card-title class="section-title">Application</v-card-title>
+        <v-card-title class="section-title">{{ zhCN.about.application }}</v-card-title>
         <v-table density="compact" class="info-table">
           <tbody>
             <tr v-for="row in applicationRows" :key="row.label">
@@ -112,7 +113,7 @@ onMounted(async () => {
           </tbody>
         </v-table>
 
-        <v-card-title class="section-title">Build</v-card-title>
+        <v-card-title class="section-title">{{ zhCN.about.build }}</v-card-title>
         <v-table density="compact" class="info-table">
           <tbody>
             <tr v-for="row in buildRows" :key="row.label">
@@ -122,7 +123,7 @@ onMounted(async () => {
           </tbody>
         </v-table>
 
-        <v-card-title class="section-title">Service</v-card-title>
+        <v-card-title class="section-title">{{ zhCN.about.service }}</v-card-title>
         <v-table density="compact" class="info-table">
           <tbody>
             <tr v-for="row in serviceRows" :key="row.label">
@@ -132,7 +133,7 @@ onMounted(async () => {
           </tbody>
         </v-table>
 
-        <v-card-title class="section-title">Runtime</v-card-title>
+        <v-card-title class="section-title">{{ zhCN.about.runtime }}</v-card-title>
         <v-table density="compact" class="info-table">
           <tbody>
             <tr v-for="row in runtimeRows" :key="row.label">

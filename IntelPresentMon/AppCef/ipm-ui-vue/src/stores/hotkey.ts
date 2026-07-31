@@ -6,6 +6,22 @@ import { Api } from '@/core/api'
 import { getEnumValues } from '@/core/meta'
 import { deepToRaw } from '@/core/vue-utils'
 import { useNotificationsStore } from './notifications'
+import { zhCN } from '@/locales/zh-CN'
+
+function getHotkeyActionName(action: HotkeyAction): string {
+    switch (action) {
+        case HotkeyAction.ToggleCapture:
+            return zhCN.hotkey.toggleCapture
+        case HotkeyAction.ToggleOverlay:
+            return zhCN.hotkey.toggleOverlay
+        case HotkeyAction.CyclePreset:
+            return zhCN.hotkey.cyclePreset
+        case HotkeyAction.ToggleEtlLogging:
+            return zhCN.hotkey.toggleEtlLogging
+        default:
+            return HotkeyAction[action] ?? ''
+    }
+}
 
 export const useHotkeyStore = defineStore('hotkey', () => {
     // === Dependent Stores ===
@@ -50,7 +66,7 @@ export const useHotkeyStore = defineStore('hotkey', () => {
         try {
           await bindHotkey(binding)
         } catch (e) {
-          notes.notify({ text: `Unable to bind default hotkey for ${HotkeyAction[binding.action]}` })
+          notes.notify({ text: zhCN.hotkey.bindDefaultFailed(getHotkeyActionName(binding.action)) })
           console.error([`Unable to bind default hotkey for ${HotkeyAction[binding.action]}`, e])
         }
       }
@@ -63,7 +79,7 @@ export const useHotkeyStore = defineStore('hotkey', () => {
         await Api.bindHotkey(deepToRaw(binding))
       } catch (e) {
         const actionName = HotkeyAction[binding.action]
-        notes.notify({ text: `Failed to bind hotkey for [${actionName}]` })
+        notes.notify({ text: zhCN.hotkey.bindFailed(getHotkeyActionName(binding.action)) })
         console.error([`Failed to bind hotkey; Action: [${actionName}]`, e])
       }
     }
@@ -74,7 +90,7 @@ export const useHotkeyStore = defineStore('hotkey', () => {
         bindings[HotkeyAction[action]] = { action, combination: null }
       } catch (e) {
         const actionName = HotkeyAction[action]
-        notes.notify({ text: `Failed to clear hotkey for [${actionName}]` })
+        notes.notify({ text: zhCN.hotkey.clearFailed(getHotkeyActionName(action)) })
         console.error([`Failed to clear hotkey; Action: [${actionName}]`, e])
       }
     }

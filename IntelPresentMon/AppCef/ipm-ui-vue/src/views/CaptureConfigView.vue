@@ -3,6 +3,7 @@
 
 <script setup lang="ts">
 import { usePreferencesStore } from '@/stores/preferences';
+import { zhCN } from '@/locales/zh-CN';
 
 const prefs = usePreferencesStore();
 </script>
@@ -10,21 +11,21 @@ const prefs = usePreferencesStore();
 <template>
   <div class="page-wrap">
     <h2 class="mt-5 ml-5 header-top">
-      Capture Configuration
+      {{ zhCN.capture.title }}
     </h2>
 
     <v-card class="page-card">
       <v-row class="mt-5">
         <v-col cols="3">
-          Summary Stats
+          {{ zhCN.capture.summaryStats }}
           <p class="text-medium-emphasis text-caption mb-0">
-            Generate a file that summarizes statistics over the entire capture run
+            {{ zhCN.capture.summaryStatsHelp }}
           </p>
         </v-col>
         <v-col cols="9">
           <v-row>
             <v-col cols="6">
-              <v-switch v-model="prefs.preferences.generateStats" label="Enable"></v-switch>
+              <v-switch v-model="prefs.preferences.generateStats" :label="zhCN.common.enable"></v-switch>
             </v-col>
           </v-row>
         </v-col>
@@ -32,15 +33,15 @@ const prefs = usePreferencesStore();
 
       <v-row class="mt-8">
         <v-col cols="3">
-          Target Block List
+          {{ zhCN.capture.targetBlockList }}
           <p class="text-medium-emphasis text-caption mb-0">
-            Filter the target process selection list to remove common non-realtime graphics applications
+            {{ zhCN.capture.targetBlockListHelp }}
           </p>
         </v-col>
         <v-col cols="9">
           <v-row>
             <v-col cols="6">
-              <v-switch v-model="prefs.preferences.enableTargetBlocklist" label="Enable"></v-switch>
+              <v-switch v-model="prefs.preferences.enableTargetBlocklist" :label="zhCN.common.enable"></v-switch>
             </v-col>
           </v-row>
         </v-col>

@@ -290,6 +290,7 @@ namespace kproc
                             const auto qm = MakeQualifiedMetric(widgetMetric);
                             graphMetricSpecs.push_back(kern::GraphMetricSpec{
                                 .metric = qm,
+                                .displayName = widgetMetric.displayName,
                                 .axisAffinity = widgetMetric.axisAffinity,
                                 .dataUnavailable = !p2c::pmon::IsQualifiedMetricAvailable(intro, qm),
                             });
@@ -418,6 +419,7 @@ namespace kproc
                     const bool includeDeviceLabels = pref.enablePerMetricDeviceSelection;
                     pSpec->widgets.push_back(kern::ReadoutSpec{
                         .metric = qm,
+                        .displayName = widgetMetric.displayName,
                         .tag = tag,
                         .labelIncludeDeviceId = includeDeviceLabels && readout.labelIncludeDeviceId,
                         .labelIncludeDeviceName = includeDeviceLabels && readout.labelIncludeDeviceName,

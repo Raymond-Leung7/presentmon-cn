@@ -125,10 +125,10 @@ namespace kproc
 	ConcurrentUiInstanceAction ShowConcurrentUiInstanceDialog_()
 	{
 		const auto result = MessageBoxW(nullptr,
-			L"Intel PresentMon is already running; concurrent instances are not supported. "
-			L"Bring previous instance to the foreground?\n\n"
-			L"Select Yes to bring previous instance to the foreground.\n"
-			L"Select No to terminate it and launch a new one.",
+			L"Intel PresentMon \u5DF2\u5728\u8FD0\u884C\uFF1B\u4E0D\u652F\u6301\u540C\u65F6\u8FD0\u884C\u591A\u4E2A\u5B9E\u4F8B\u3002"
+			L"\u662F\u5426\u5C06\u4E4B\u524D\u7684\u5B9E\u4F8B\u7F6E\u4E8E\u524D\u53F0\uFF1F\n\n"
+			L"\u9009\u62E9\u201C\u662F\u201D\u5C06\u4E4B\u524D\u7684\u5B9E\u4F8B\u7F6E\u4E8E\u524D\u53F0\u3002\n"
+			L"\u9009\u62E9\u201C\u5426\u201D\u5C06\u7EC8\u6B62\u5B83\u5E76\u542F\u52A8\u65B0\u5B9E\u4F8B\u3002",
 			L"Intel PresentMon",
 			MB_YESNO | MB_DEFBUTTON2 | MB_ICONWARNING | MB_APPLMODAL | MB_SETFOREGROUND);
 		return result == IDYES ?
@@ -159,7 +159,7 @@ namespace kproc
 				return p2c::client::util::UiAlreadyRunningExitCode;
 			}
 			MessageBoxW(nullptr,
-				L"Unable to close the previous Intel PresentMon instance.",
+				L"\u65E0\u6CD5\u5173\u95ED\u4E4B\u524D\u7684 Intel PresentMon \u5B9E\u4F8B\u3002",
 				L"Intel PresentMon",
 				MB_ICONERROR | MB_APPLMODAL | MB_SETFOREGROUND);
 			return p2c::client::util::UiAlreadyRunningExitCode;
@@ -267,7 +267,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 					std::cerr << cli::Options::GetDiagnostics() << std::endl;
 				}
 				else {
-					MessageBoxA(nullptr, cli::Options::GetDiagnostics().c_str(), "Command Line Parse Error",
+					std::wstring message = L"\u547D\u4EE4\u884C\u53C2\u6570\u89E3\u6790\u5931\u8D25\u3002"
+						L"\u8BF7\u68C0\u67E5\u4EE5\u4E0B\u4FE1\u606F\uFF1A\n\n";
+					message += util::str::ToWide(cli::Options::GetDiagnostics());
+					MessageBoxW(nullptr, message.c_str(), L"\u547D\u4EE4\u884C\u89E3\u6790\u9519\u8BEF",
 						MB_ICONERROR | MB_APPLMODAL | MB_SETFOREGROUND);
 				}
 			}

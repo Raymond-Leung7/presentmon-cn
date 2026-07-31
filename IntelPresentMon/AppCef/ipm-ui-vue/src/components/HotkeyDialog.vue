@@ -4,6 +4,7 @@
 import { ref, computed, watch } from 'vue';
 import type { Combination, KeyOption, ModifierOption, ModifierCode, KeyCode } from '@/core/hotkey';
 import { useHotkeyStore } from '@/stores/hotkey';
+import { zhCN } from '@/locales/zh-CN';
 
 // options
 defineOptions({ name: 'HotkeyDialog'})
@@ -80,7 +81,7 @@ defineExpose({ show })
   >
     <v-card>
       <v-card-title>
-        <span class="text-h6 text-grey">Hotkey for <span class="text-blue-lighten-3">{{ name }}</span></span>
+        <span class="text-h6 text-grey">{{ zhCN.hotkey.dialogTitle }}<span class="text-blue-lighten-3">{{ name }}</span></span>
       </v-card-title>
       <v-card-text>
         <v-row>
@@ -88,7 +89,7 @@ defineExpose({ show })
             <v-select
               :items="modifierOptions"
               v-model="modifiers_"
-              label="Modifiers"
+              :label="zhCN.hotkey.modifiers"
               item-title="text"
               item-value="code"
               variant="outlined"
@@ -102,7 +103,7 @@ defineExpose({ show })
             <v-select
               :items="keyOptions"
               v-model="key_"
-              label="Key"
+              :label="zhCN.hotkey.key"
               item-title="text"
               item-value="code"
               variant="outlined"
@@ -122,14 +123,14 @@ defineExpose({ show })
             @click="clear"
             :disabled="!combinationSet"
           >
-            Clear
+            {{ zhCN.hotkey.clear }}
           </v-btn>
           <v-btn
             color="white-darken-3"
             variant="text"
             @click="cancel"
           >
-            Cancel
+            {{ zhCN.common.cancel }}
           </v-btn>
           <v-btn
             color="primary"
@@ -137,7 +138,7 @@ defineExpose({ show })
             @click="submit"
             :disabled="!combinationValid"
           >
-            OK
+            {{ zhCN.common.confirm }}
           </v-btn>
         </v-card-actions>
     </v-card>

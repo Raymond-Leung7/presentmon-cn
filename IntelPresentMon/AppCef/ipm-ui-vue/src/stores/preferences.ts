@@ -4,9 +4,15 @@ import { ref } from 'vue';
 import { defineStore } from 'pinia';
 import { Api } from '@/core/api';
 import { lowestAdapterId } from '@/core/adapter';
-import { type Preferences as PreferencesType, type PreferenceFile, makeDefaultPreferences, Preset } from '@/core/preferences';
+import {
+  DEFAULT_GRAPH_FONT_NAME,
+  type Preferences as PreferencesType,
+  type PreferenceFile,
+  makeDefaultPreferences,
+  Preset,
+  signature,
+} from '@/core/preferences';
 import { combinationsAreSame } from '@/core/hotkey';
-import { signature } from '@/core/preferences';
 import { useHotkeyStore } from './hotkey';
 import { debounce, type DelayedTask, dispatchDelayedTask } from '@/core/timing';
 import { migratePreferences } from '@/core/preferences-migration';
@@ -20,6 +26,7 @@ import {
     prepareWidgetMetricForPush,
 } from '@/core/metric-device';
 import { useNotificationsStore } from './notifications';
+import { zhCN } from '@/locales/zh-CN';
 
 export const usePreferencesStore = defineStore('preferences', () => {
   // === Dependent Stores ===
@@ -59,6 +66,16 @@ export const usePreferencesStore = defineStore('preferences', () => {
     let migrated = false;
     if (config.signature.version !== signature.version) {
       migratePreferences(config, { adapters: intro.adapters });
+      migrated = true;
+    }
+    if (config.preferences.graphFont?.name === 'Verdana') {
+      config.preferences = {
+        ...config.preferences,
+        graphFont: {
+          ...config.preferences.graphFont,
+          name: DEFAULT_GRAPH_FONT_NAME,
+        },
+      };
       migrated = true;
     }
 
@@ -129,7 +146,7 @@ export const usePreferencesStore = defineStore('preferences', () => {
   }
   function notifyEtlLoggingDisabled() {
     etlLogging.value = false;
-    notes.notify({ text: 'ETL capture is currently disabled.' });
+    notes.notify({ text: zhCN.logging.etlDisabled });
   }
 
   function toggleEtlLogging() {
@@ -148,6 +165,7 @@ export const usePreferencesStore = defineStore('preferences', () => {
         if (metric === undefined) {
           return false;
         }
+        widgetMetric.displayName = metric.name;
         const pushMetric = { ...widgetMetric.metric };
         if (!enablePerMetricDeviceSelection && isGpuMetric(metric)) {
           pushMetric.deviceId = null;

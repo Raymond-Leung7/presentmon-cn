@@ -7,6 +7,7 @@ import { useLoadoutStore } from '@/stores/loadout';
 import { useNotificationsStore } from '@/stores/notifications';
 import { Api } from '@/core/api';
 import DefaultAdapterSelect from '@/components/DefaultAdapterSelect.vue';
+import { zhCN } from '@/locales/zh-CN';
 
 defineOptions({name: 'LoadoutConfigView'})
 
@@ -101,7 +102,7 @@ async function save() {
   }
   catch (e) {
     console.error('Error saving loadout:', e)
-    notes.notify({ text: 'An error occurred while saving the loadout. Please try again.' })
+    notes.notify({ text: zhCN.loadout.saveError })
   }
 };
 
@@ -110,13 +111,13 @@ async function load() {
     let {payload} = await Api.browseReadSpec();
     // zero length result means user canceled out of dialog
     if (payload.length > 0) {
-      const err = 'Failed to load preset file. ';
+      const err = `${zhCN.loadout.loadPresetError} `;
       await loadout.loadConfigFromPayload(payload, err);
     }
   }
   catch (e) {
     console.error('Error loading loadout:', e)
-    notes.notify({ text: 'An error occurred while loading the loadout. Please try again.' })
+    notes.notify({ text: zhCN.loadout.loadError })
   }
 };
 
@@ -138,13 +139,13 @@ function confirmClearWidgets() {
   <div class="flex-grow-1 flex-column mx-lg-12 mx-xl-16">
     <h2 class="mt-5 ml-5 link-head" @click="$router.back()">
         <v-icon size="22" color="inherit">mdi-chevron-left</v-icon>
-        Loadout Configuration
+        {{ zhCN.loadout.title }}
     </h2>
 
     <div class="loadout-toolbar ml-5 mr-5 mt-4">
       <div class="loadout-toolbar-adapter">
         <default-adapter-select
-          label="Default adapter"
+          :label="zhCN.loadout.defaultAdapter"
           density="compact"
           hide-details
         ></default-adapter-select>
@@ -156,20 +157,20 @@ function confirmClearWidgets() {
         :disabled="!hasWidgets"
         @click="clearDialog = true"
       >
-        Clear all widgets
+        {{ zhCN.loadout.clearAllWidgets }}
       </v-btn>
     </div>
 
     <v-dialog v-model="clearDialog" max-width="500px">
       <v-card>
-        <v-card-title class="headline">Clear loadout</v-card-title>
+        <v-card-title class="headline">{{ zhCN.loadout.clearTitle }}</v-card-title>
         <v-card-text>
-          Remove all widgets from this loadout?
+          {{ zhCN.loadout.clearPrompt }}
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" @click="confirmClearWidgets">Clear</v-btn>
-          <v-btn color="grey darken-1" text @click="clearDialog = false">Cancel</v-btn>
+          <v-btn color="primary" @click="confirmClearWidgets">{{ zhCN.common.clear }}</v-btn>
+          <v-btn color="grey darken-1" text @click="clearDialog = false">{{ zhCN.common.cancel }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -183,12 +184,12 @@ function confirmClearWidgets() {
     ></loadout-row>
     </v-row>
     <div class="add-btn-row">
-        <v-btn @click="addWidget()" class="add-btn" variant="tonal" height="48" color="white">Add New Widget</v-btn>
+        <v-btn @click="addWidget()" class="add-btn" variant="tonal" height="48" color="white">{{ zhCN.loadout.addWidget }}</v-btn>
     </div>
 
     <v-row>
-    <v-col cols="6" style="text-align: center"><v-btn @click="save()" variant="tonal" color="white">Save</v-btn></v-col>
-    <v-col cols="6" style="text-align: center"><v-btn @click="load()" variant="tonal" color="white">Load</v-btn></v-col>
+    <v-col cols="6" style="text-align: center"><v-btn @click="save()" variant="tonal" color="white">{{ zhCN.common.save }}</v-btn></v-col>
+    <v-col cols="6" style="text-align: center"><v-btn @click="load()" variant="tonal" color="white">{{ zhCN.common.load }}</v-btn></v-col>
     </v-row>
   </div>
 </template>

@@ -10,6 +10,7 @@ import { useProcessesStore } from '@/stores/processes';
 import { isBlocked } from '@/core/block-list';
 import { cancelTopPolling, launchAutotargetting } from '@/core/autotarget';
 import { Api } from '@/core/api';
+import { zhCN } from '@/locales/zh-CN';
 
 defineOptions({name: 'MainView'})
 
@@ -96,8 +97,8 @@ const processFromItem = (item: ListItem<unknown>) => item.raw as Process;
     <v-card class="page-card my-5 pt-3">
     <v-row>
         <v-col cols="3">
-        Process
-        <p class="text-medium-emphasis text-caption mb-0">Application process to track, overlay and capture</p>
+        {{ zhCN.main.process }}
+        <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.main.processHelp }}</p>
         </v-col>
         <v-col cols="9" class="d-flex align-center">
         <v-autocomplete
@@ -105,7 +106,7 @@ const processFromItem = (item: ListItem<unknown>) => item.raw as Process;
             v-model="prefs.pid"
             item-value="pid"
             :filter="selectFilter"
-            label="Process"
+            :label="zhCN.main.process"
             :loading="loadingProcs"
             @click="loadProcesses"
             append-icon=""
@@ -144,19 +145,19 @@ const processFromItem = (item: ListItem<unknown>) => item.raw as Process;
 
     <v-row dense>       
         <v-col cols="3">
-        Auto-target
-        <p class="text-medium-emphasis text-caption mb-0">Automatically target process with the highest GPU utilization</p>
+        {{ zhCN.main.autoTarget }}
+        <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.main.autoTargetHelp }}</p>
         </v-col>
 
         <v-col cols="9" class="d-flex align-center">
-        <v-switch label="Enable" v-model="prefs.preferences.enableAutotargetting"></v-switch>
+        <v-switch :label="zhCN.common.enable" v-model="prefs.preferences.enableAutotargetting"></v-switch>
         </v-col>
     </v-row>   
     
     <v-row dense>       
         <v-col cols="3">
-        Overlay Hotkey
-        <p class="text-medium-emphasis text-caption mb-0">Set hotkey to toggle overlay on/off</p>
+        {{ zhCN.main.overlayHotkey }}
+        <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.main.overlayHotkeyHelp }}</p>
         </v-col>
 
         <v-col cols="9" class="d-flex justify-center align-center">
@@ -168,30 +169,30 @@ const processFromItem = (item: ListItem<unknown>) => item.raw as Process;
     <v-card class="page-card my-5 pt-3">
     <v-row>       
         <v-col cols="3">
-        Preset
-        <p class="text-medium-emphasis text-caption mb-0">Select a preset configuration for overlay widget loadout etc.</p>
+        {{ zhCN.main.preset }}
+        <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.main.presetHelp }}</p>
         </v-col>
 
         <v-col cols="9" class="d-flex justify-center align-center">        
         <v-btn-toggle v-model="prefs.preferences.selectedPreset" :mandatory="prefs.preferences.selectedPreset !== null" variant="outlined" divided>
             <v-btn class="px-5" large>
-            Basic
+            {{ zhCN.main.basic }}
             </v-btn>
 
             <v-btn class="px-5" large>
-            Game Experience
+            {{ zhCN.main.gameExperience }}
             </v-btn>
 
             <v-btn class="px-5" large>
-            GPU Focus
+            {{ zhCN.main.gpuFocus }}
             </v-btn>
 
             <v-btn class="px-5" large>
-            Power/Temp
+            {{ zhCN.main.powerTemperature }}
             </v-btn>
 
             <v-btn class="px-5" large :value="Preset.Custom">
-            Custom
+            {{ zhCN.main.custom }}
             </v-btn>        
         </v-btn-toggle>
         <v-btn
@@ -199,7 +200,7 @@ const processFromItem = (item: ListItem<unknown>) => item.raw as Process;
             :disabled="prefs.preferences.selectedPreset !== Preset.Custom"
             color="primary" class="ml-5"
         >
-            Edit
+            {{ zhCN.common.edit }}
         </v-btn>
         </v-col>
     </v-row>
@@ -207,8 +208,8 @@ const processFromItem = (item: ListItem<unknown>) => item.raw as Process;
     <!-- minimal hotkey component front -->
     <v-row dense>       
         <v-col cols="3">
-        Preset Cycle Hotkey
-        <p class="text-medium-emphasis text-caption mb-0">Set hotkey for cycling through presets</p>
+        {{ zhCN.main.presetCycleHotkey }}
+        <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.main.presetCycleHotkeyHelp }}</p>
         </v-col>
 
         <v-col cols="9" class="d-flex justify-center align-center">    
@@ -221,15 +222,15 @@ const processFromItem = (item: ListItem<unknown>) => item.raw as Process;
 
     <v-row>
         <v-col cols="3">
-        Capture Duration
-        <p class="text-medium-emphasis text-caption mb-0">Automatically stop capture after N seconds</p>
+        {{ zhCN.main.captureDuration }}
+        <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.main.captureDurationHelp }}</p>
         </v-col>      
         <v-col cols="2">
-            <v-switch v-model="prefs.preferences.enableCaptureDuration" color="primary" label="Enable" hide-details></v-switch>
+            <v-switch v-model="prefs.preferences.enableCaptureDuration" color="primary" :label="zhCN.common.enable" hide-details></v-switch>
         </v-col>
         <v-col cols="3">
         <v-text-field
-            label="Seconds"
+            :label="zhCN.main.seconds"
             v-model="prefs.preferences.captureDuration"
             :disabled="!prefs.preferences.enableCaptureDuration"
             class="mt-4 ml-8"
@@ -243,8 +244,8 @@ const processFromItem = (item: ListItem<unknown>) => item.raw as Process;
     <!-- minimal hotkey component front -->
     <v-row dense>       
         <v-col cols="3">
-        Capture Hotkey
-        <p class="text-medium-emphasis text-caption mb-0">Set hotkey for capture of per-frame performance data as CSV</p>
+        {{ zhCN.main.captureHotkey }}
+        <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.main.captureHotkeyHelp }}</p>
         </v-col>
 
         <v-col cols="9" class="d-flex justify-center align-center">
@@ -257,8 +258,8 @@ const processFromItem = (item: ListItem<unknown>) => item.raw as Process;
     <v-card class="page-card my-5 pt-3">
     <v-row>       
         <v-col cols="3">
-        Capture Storage
-        <p class="text-medium-emphasis text-caption mb-0">Open the folder containing all frame traces and stats summaries</p>
+        {{ zhCN.main.captureStorage }}
+        <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.main.captureStorageHelp }}</p>
         </v-col>
 
         <v-col cols="9" class="d-flex justify-center align-center">
@@ -267,14 +268,14 @@ const processFromItem = (item: ListItem<unknown>) => item.raw as Process;
             color="secondary"
             class="px-6"
             @click="handleCaptureExplore"
-        >Open in Explorer</v-btn>
+        >{{ zhCN.common.openInExplorer }}</v-btn>
         </v-col>
     </v-row>
     </v-card>
     <v-row>
     <v-col cols="12" class="text-right">
         <router-link class="settings-link" :to="{name: 'overlay-config'}">
-        Settings
+        {{ zhCN.main.settings }}
         <v-icon large>mdi-cog</v-icon>
         </router-link>
     </v-col>

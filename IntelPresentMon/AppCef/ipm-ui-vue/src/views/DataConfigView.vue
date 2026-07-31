@@ -6,12 +6,13 @@ import { computed } from 'vue';
 import { usePreferencesStore } from '@/stores/preferences';
 import { isDevelopment } from '@/core/env-vars';
 import DefaultAdapterSelect from '@/components/DefaultAdapterSelect.vue';
+import { zhCN } from '@/locales/zh-CN';
 
 const prefs = usePreferencesStore();
 
 const metricPollMessages = computed(() => {
   if (prefs.preferences.metricPollRate % prefs.preferences.overlayDrawRate !== 0) {
-    return [`Recommend setting poll rate to be a whole multiple of the overlay draw rate (currently ${prefs.preferences.overlayDrawRate}fps).`];
+    return [zhCN.data.pollingRateRecommendation(prefs.preferences.overlayDrawRate)];
   }
   return [];
 });
@@ -21,21 +22,21 @@ const metricPollMessages = computed(() => {
 <template>
   <div class="page-wrap">
     <h2 class="mt-5 ml-5 header-top">
-      Data Processing Configuration
+      {{ zhCN.data.title }}
     </h2>
 
     <v-card class="page-card">
       <v-row class="mt-5" v-if="isDevelopment()">
         <v-col cols="3">
-          ETW Manual Flush
+          {{ zhCN.data.manualEtwFlush }}
           <p class="text-medium-emphasis text-caption mb-0">
-            Control whether manual ETW flushing is performed or the default 1000ms timer is used (may require service restart).
+            {{ zhCN.data.manualEtwFlushHelp }}
           </p>
         </v-col>
         <v-col cols="9">
           <v-row>
             <v-col cols="6">
-              <v-switch v-model="prefs.preferences.manualEtwFlush" label="Enable" color="primary"></v-switch>
+              <v-switch v-model="prefs.preferences.manualEtwFlush" :label="zhCN.common.enable" color="primary"></v-switch>
             </v-col>
           </v-row>
         </v-col>
@@ -43,9 +44,9 @@ const metricPollMessages = computed(() => {
 
       <v-row class="mt-5" v-if="isDevelopment()">
         <v-col cols="3">
-          ETW Manual Flush Period
+          {{ zhCN.data.manualEtwFlushPeriod }}
           <p class="text-medium-emphasis text-caption mb-0">
-            Rate of manual flushing of the ETW event buffers. Offset should roughly match this.
+            {{ zhCN.data.manualEtwFlushPeriodHelp }}
           </p>
         </v-col>
         <v-col cols="9">
@@ -61,9 +62,9 @@ const metricPollMessages = computed(() => {
 
       <v-row class="mt-5">
         <v-col cols="3">
-          Polling Rate
+          {{ zhCN.data.pollingRate }}
           <p class="text-medium-emphasis text-caption mb-0">
-            Rate at which to poll API for metric data (Hz). Controls temporal resolution of graphs and readouts.
+            {{ zhCN.data.pollingRateHelp }}
           </p>
         </v-col>
         <v-col cols="9">
@@ -81,9 +82,9 @@ const metricPollMessages = computed(() => {
 
       <v-row class="mt-5" v-if="isDevelopment()">
         <v-col cols="3">
-          Metric Window offset
+          {{ zhCN.data.metricWindowOffset }}
           <p class="text-medium-emphasis text-caption mb-0">
-            Time in ms to offset the sliding window by to ensure it doesn't slide into the time region of frames not yet received.
+            {{ zhCN.data.metricWindowOffsetHelp }}
           </p>
         </v-col>
         <v-col cols="9">
@@ -98,9 +99,9 @@ const metricPollMessages = computed(() => {
 
       <v-row class="mt-5">
         <v-col cols="3">
-          Telemetry Period
+          {{ zhCN.data.telemetryPeriod }}
           <p class="text-medium-emphasis text-caption mb-0">
-            Time between service-side power telemetry polling calls (ms). Indirectly affects temporal resolution of a subset of metrics, such as GPU power and temperature.
+            {{ zhCN.data.telemetryPeriodHelp }}
           </p>
         </v-col>
         <v-col cols="9">
@@ -115,9 +116,9 @@ const metricPollMessages = computed(() => {
 
       <v-row class="mt-8">
         <v-col cols="3">
-          Window Size
+          {{ zhCN.data.windowSize }}
           <p class="text-medium-emphasis text-caption mb-0">
-            Size of sample window used for calculating statistics such as average or 99% (ms)
+            {{ zhCN.data.windowSizeHelp }}
           </p>
         </v-col>
         <v-col cols="9">
@@ -133,9 +134,9 @@ const metricPollMessages = computed(() => {
 
       <v-row class="mt-8">
         <v-col cols="3">
-          Per-metric device selection
+          {{ zhCN.data.perMetricDevice }}
           <p class="text-medium-emphasis text-caption mb-0">
-            Show GPU device pickers on loadout rows. Allows tracking multiple GPUs simultaneously. When disabled, all rows track the default adapter (recommended).
+            {{ zhCN.data.perMetricDeviceHelp }}
           </p>
         </v-col>
         <v-col cols="9">
@@ -143,7 +144,7 @@ const metricPollMessages = computed(() => {
             <v-col cols="6">
               <v-switch
                 v-model="prefs.preferences.enablePerMetricDeviceSelection"
-                label="Enable"
+                :label="zhCN.common.enable"
                 color="primary"
               ></v-switch>
             </v-col>
@@ -153,9 +154,9 @@ const metricPollMessages = computed(() => {
 
       <v-row class="mt-8">
         <v-col cols="3">
-          Default adapter
+          {{ zhCN.data.defaultAdapter }}
           <p class="text-medium-emphasis text-caption mb-0">
-            Global GPU for new loadout rows, frame-query adapter selection, and metrics that defer to the global adapter.
+            {{ zhCN.data.defaultAdapterHelp }}
           </p>
         </v-col>
         <v-col cols="9">

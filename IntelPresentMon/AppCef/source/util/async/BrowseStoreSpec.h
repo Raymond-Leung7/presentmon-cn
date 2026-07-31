@@ -25,12 +25,12 @@ namespace p2c::client::util::async
             OPENFILENAMEW ofn{
                 .lStructSize = sizeof(ofn),
                 .hwndOwner = pBrowser->GetHost()->GetWindowHandle(),
-                .lpstrFilter = L"All (*.*)\0*.*\0JSON (*.json)\0*.json\0",
+                .lpstrFilter = L"\u6240\u6709\u6587\u4EF6 (*.*)\0*.*\0JSON \u6587\u4EF6 (*.json)\0*.json\0",
                 .nFilterIndex = 2,
                 .lpstrFile = pathBuffer,
                 .nMaxFile = sizeof(pathBuffer),
                 .lpstrInitialDir = startPath.c_str(),
-                .lpstrTitle = L"Save Loadout As",
+                .lpstrTitle = L"\u5E03\u5C40\u53E6\u5B58\u4E3A",
                 .Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_OVERWRITEPROMPT,
             };
 

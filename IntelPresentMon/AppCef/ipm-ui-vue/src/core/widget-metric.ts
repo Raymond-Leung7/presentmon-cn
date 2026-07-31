@@ -13,6 +13,7 @@ export enum AxisAffinity {
 export interface WidgetMetric {
     key: number;
     metric: QualifiedMetric;
+    displayName?: string;
     lineColor: RgbaColor;
     fillColor: RgbaColor;
     axisAffinity: AxisAffinity;

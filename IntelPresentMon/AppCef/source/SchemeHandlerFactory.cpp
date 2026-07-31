@@ -35,11 +35,11 @@ namespace p2c::client::cef
         const CefString& scheme_name,
         CefRefPtr<CefRequest> request)
     {
-        const auto DoErrorMessage = [&](std::string title, std::string body) {
+        const auto DoErrorMessage = [&](const wchar_t* title, const wchar_t* body) {
             if (hardFail_) {
-                MessageBoxA(
+                MessageBoxW(
                     browser->GetHost()->GetWindowHandle(),
-                    body.c_str(), title.c_str(),
+                    body, title,
                     MB_ICONERROR | MB_APPLMODAL
                 );
             }
@@ -55,7 +55,7 @@ namespace p2c::client::cef
             CefURLParts url_parts;
             if (!CefParseURL(request->GetURL(), url_parts)) {
                 pmlog_error(std::format("Failed parsing URL: {}", request->GetURL().ToString())).no_trace();
-                DoErrorMessage("URL Error", "Failed parsing URL, see log.");
+                DoErrorMessage(L"URL \u9519\u8BEF", L"URL \u89E3\u6790\u5931\u8D25\uFF0C\u8BF7\u67E5\u770B\u65E5\u5FD7\u3002");
             }
             else if (CefString(&url_parts.host) != localHost_ && CefString(&url_parts.port) != localPort_) {
                 if constexpr (IS_DEBUG) {
@@ -63,7 +63,8 @@ namespace p2c::client::cef
                 }
                 else {
                     pmlog_error(std::format("URL does not match dev endpoint: {}", request->GetURL().ToString())).no_trace();
-                    DoErrorMessage("URL Error", "URL does not match dev endpoint, see log.");
+                    DoErrorMessage(L"URL \u9519\u8BEF",
+                        L"URL \u4E0E\u5F00\u53D1\u7AEF\u70B9\u4E0D\u5339\u914D\uFF0C\u8BF7\u67E5\u770B\u65E5\u5FD7\u3002");
                     std::terminate();
                 }
             }
@@ -77,12 +78,13 @@ namespace p2c::client::cef
             CefURLParts url_parts;
             if (!CefParseURL(request->GetURL(), url_parts)) {
                 pmlog_error(std::format("Failed parsing URL: {}", request->GetURL().ToString())).no_trace();
-                DoErrorMessage("URL Error", "Failed parsing URL, see log.");
+                DoErrorMessage(L"URL \u9519\u8BEF", L"URL \u89E3\u6790\u5931\u8D25\uFF0C\u8BF7\u67E5\u770B\u65E5\u5FD7\u3002");
                 return nullptr;
             }
             else if (const auto host = CefString(&url_parts.host); host != "app") {
                 pmlog_error(std::format("Non-app domain in File mode: {}", request->GetURL().ToString())).no_trace();
-                DoErrorMessage("URL Error", "Non-app domain for File mode, see log.");
+                DoErrorMessage(L"URL \u9519\u8BEF",
+                    L"\u6587\u4EF6\u6A21\u5F0F\u4E0D\u652F\u6301\u975E app \u57DF\u540D\uFF0C\u8BF7\u67E5\u770B\u65E5\u5FD7\u3002");
                 return nullptr;
             }
             else {
@@ -93,7 +95,8 @@ namespace p2c::client::cef
         // any other scheme in File mode is an error
         else {
             pmlog_error(std::format("Wrong scheme for File mode: {}", request->GetURL().ToString())).no_trace();
-            DoErrorMessage("URL Error", "Wrong scheme for File mode, see log.");
+            DoErrorMessage(L"URL \u9519\u8BEF",
+                L"\u6587\u4EF6\u6A21\u5F0F\u4F7F\u7528\u4E86\u9519\u8BEF\u7684 URL \u65B9\u6848\uFF0C\u8BF7\u67E5\u770B\u65E5\u5FD7\u3002");
             return new SchemeFileHandler(baseDir_);
         }
     }

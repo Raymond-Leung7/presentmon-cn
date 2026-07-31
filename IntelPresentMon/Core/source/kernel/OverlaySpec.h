@@ -42,6 +42,7 @@ namespace p2c::kern
     struct GraphMetricSpec
     {
         QualifiedMetric metric;
+        std::string displayName;
         gfx::lay::AxisAffinity axisAffinity;
         bool dataUnavailable = false;
     };
@@ -58,6 +59,7 @@ namespace p2c::kern
     struct ReadoutSpec
     {
         QualifiedMetric metric;
+        std::string displayName;
         std::string tag;
         bool labelIncludeDeviceId = false;
         bool labelIncludeDeviceName = false;

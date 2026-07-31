@@ -6,10 +6,11 @@ import { usePreferencesStore } from '@/stores/preferences';
 import { Api } from '@/core/api';
 import { Action } from '@/core/hotkey';
 import HotkeyButton from '@/components/HotkeyButton.vue';
+import { zhCN } from '@/locales/zh-CN';
 
 const prefs = usePreferencesStore();
 const etlCaptureDisabled = true;
-const etlCaptureDisabledMessage = 'ETL capture is currently disabled.';
+const etlCaptureDisabledMessage = zhCN.logging.etlDisabled;
 async function handleEtlCapture() {
     prefs.notifyEtlLoggingDisabled()
 }
@@ -17,14 +18,18 @@ async function handleEtlExplore() {
     await Api.exploreEtls()
 }
 function getEtlToggleButtonName() {
-    return etlCaptureDisabled ? 'ETL Disabled' : prefs.etlLogging ? 'Finish ETL' : 'Start ETL';
+    return etlCaptureDisabled
+      ? zhCN.logging.etlDisabledButton
+      : prefs.etlLogging
+        ? zhCN.logging.finishEtl
+        : zhCN.logging.startEtl;
 }
 </script>
 
 <template>
   <div class="page-wrap">
     <h2 class="mt-5 ml-5 header-top">
-      Logging Configuration
+      {{ zhCN.logging.title }}
     </h2>
 
     <v-card class="page-card">
@@ -34,9 +39,9 @@ function getEtlToggleButtonName() {
 
         <v-row class="mt-5">
             <v-col cols="3">
-                ETL Capture Hotkey
+                {{ zhCN.logging.etlCaptureHotkey }}
                 <p class="text-medium-emphasis text-caption mb-0">
-                    Hotkey for starting/finishing an ETL trace
+                    {{ zhCN.logging.etlCaptureHotkeyHelp }}
                 </p>
             </v-col>
             <v-col cols="9">
@@ -50,9 +55,9 @@ function getEtlToggleButtonName() {
 
         <v-row class="mt-5">
             <v-col cols="3">
-                Capture ETL
+                {{ zhCN.logging.captureEtl }}
                 <p class="text-medium-emphasis text-caption mb-0">
-                    Raw ETL capture is currently disabled.
+                    {{ zhCN.logging.captureEtlHelp }}
                 </p>
             </v-col>
             <v-col cols="9">
@@ -66,15 +71,15 @@ function getEtlToggleButtonName() {
 
         <v-row class="mt-5">
             <v-col cols="3">
-                ETL Folder
+                {{ zhCN.logging.etlFolder }}
                 <p class="text-medium-emphasis text-caption mb-0">
-                    Navigate to the folder that receives the captured .etl trace files
+                    {{ zhCN.logging.etlFolderHelp }}
                 </p>
             </v-col>
             <v-col cols="9">
                 <v-row>
                     <v-col cols="6">
-                        <v-btn @click="handleEtlExplore">Open in Explorer</v-btn>
+                        <v-btn @click="handleEtlExplore">{{ zhCN.common.openInExplorer }}</v-btn>
                     </v-col>
                 </v-row>
             </v-col>

@@ -5,6 +5,7 @@
 import { usePreferencesStore } from '@/stores/preferences';
 import OverlayPositioner from '@/components/OverlayPositioner.vue';
 import ColorPicker from '@/components/ColorPicker.vue';
+import { zhCN } from '@/locales/zh-CN';
 const prefs = usePreferencesStore();
 </script>
 
@@ -12,20 +13,20 @@ const prefs = usePreferencesStore();
 <div class="page-wrap">
     
     <h2 class="mt-5 ml-5 header-top">
-        Overlay Configuration
+        {{ zhCN.overlay.title }}
     </h2>
 
     <v-card class="page-card">
 
         <v-row class="mt-5">
         <v-col cols="3">
-            Windowed Mode
-            <p class="text-medium-emphasis text-caption mb-0">Display widgets on a standalone window instead of an overlay tracking the target</p>
+            {{ zhCN.overlay.windowedMode }}
+            <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.overlay.windowedModeHelp }}</p>
         </v-col>
         <v-col cols="9">
             <v-row>
                 <v-col cols="6">
-                    <v-switch v-model="prefs.preferences.independentWindow" label="Enable"></v-switch>
+                    <v-switch v-model="prefs.preferences.independentWindow" :label="zhCN.common.enable"></v-switch>
                 </v-col>
             </v-row>
         </v-col>
@@ -33,13 +34,13 @@ const prefs = usePreferencesStore();
 
         <v-row class="mt-8">
         <v-col cols="3">
-            Automatic Hide
-            <p class="text-medium-emphasis text-caption mb-0">Automatically disable the overlay during capture</p>
+            {{ zhCN.overlay.automaticHide }}
+            <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.overlay.automaticHideHelp }}</p>
         </v-col>
         <v-col cols="9">
             <v-row>
                 <v-col cols="6">
-                    <v-switch v-model="prefs.preferences.hideDuringCapture" label="Enable"></v-switch>
+                    <v-switch v-model="prefs.preferences.hideDuringCapture" :label="zhCN.common.enable"></v-switch>
                 </v-col>
             </v-row>
         </v-col>
@@ -47,8 +48,8 @@ const prefs = usePreferencesStore();
 
         <v-row class="mt-8">       
         <v-col cols="3">
-            Position
-            <p class="text-medium-emphasis text-caption mb-0">Where the overlay appears on the target window</p>
+            {{ zhCN.overlay.position }}
+            <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.overlay.positionHelp }}</p>
         </v-col>
         <v-col cols="9">
             <overlay-positioner v-model="prefs.preferences.overlayPosition"></overlay-positioner>
@@ -57,8 +58,8 @@ const prefs = usePreferencesStore();
 
         <v-row class="mt-8">
         <v-col cols="3">
-            Width
-            <p class="text-medium-emphasis text-caption mb-0">Width of the overlay window (height determined by content)</p>
+            {{ zhCN.overlay.width }}
+            <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.overlay.widthHelp }}</p>
         </v-col>
         <v-col cols="9">
             <v-row>
@@ -76,8 +77,8 @@ const prefs = usePreferencesStore();
 
         <v-row class="mt-8">
         <v-col cols="3">
-            Time Scale
-            <p class="text-medium-emphasis text-caption mb-0">Range of time (s) displayed on graphs' x-axes. Controls the scrolling speed.</p>
+            {{ zhCN.overlay.timeScale }}
+            <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.overlay.timeScaleHelp }}</p>
         </v-col>
         <v-col cols="9">
             <v-slider
@@ -92,18 +93,18 @@ const prefs = usePreferencesStore();
 
         <v-row class="mt-8">
         <v-col cols="3">
-            Graphics Scaling
-            <p class="text-medium-emphasis text-caption mb-0">Upscale overlay graphics to make text more readable on high DPI displays</p>
+            {{ zhCN.overlay.graphicsScaling }}
+            <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.overlay.graphicsScalingHelp }}</p>
         </v-col>
         <v-col cols="9">
             <v-row>
                 <v-col cols="4">
-                    <v-switch v-model="prefs.preferences.upscale" label="Enable"></v-switch>
+                    <v-switch v-model="prefs.preferences.upscale" :label="zhCN.common.enable"></v-switch>
                 </v-col>
                 <v-col cols="8">
                     <v-slider
                         class="mt-3"
-                        label="Factor"
+                        :label="zhCN.overlay.factor"
                         v-model="prefs.preferences.upscaleFactor"
                         :max="5"
                         :min="1"
@@ -118,8 +119,8 @@ const prefs = usePreferencesStore();
 
         <v-row class="mt-8">       
         <v-col cols="3">
-            Draw Rate
-            <p class="text-medium-emphasis text-caption mb-0">Rate at which to draw the overlay</p>
+            {{ zhCN.overlay.drawRate }}
+            <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.overlay.drawRateHelp }}</p>
         </v-col>
         <v-col cols="9">
             <v-slider
@@ -133,11 +134,11 @@ const prefs = usePreferencesStore();
 
         <v-row class="mt-8">       
         <v-col cols="3">
-            Background Color
-            <p class="text-medium-emphasis text-caption mb-0">Control background color of entire overlay</p>
+            {{ zhCN.overlay.backgroundColor }}
+            <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.overlay.backgroundColorHelp }}</p>
         </v-col>
         <v-col cols="3">
-            <color-picker v-model="prefs.preferences.overlayBackgroundColor" class="color-picker" label="Background"></color-picker>
+            <color-picker v-model="prefs.preferences.overlayBackgroundColor" class="color-picker" :label="zhCN.common.background"></color-picker>
         </v-col>
         </v-row>
 

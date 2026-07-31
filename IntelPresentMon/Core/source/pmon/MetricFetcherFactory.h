@@ -12,6 +12,7 @@
 #include <vector>
 #include <span>
 #include <ranges>
+#include <string>
 
 
 namespace p2c::pmon
@@ -21,6 +22,42 @@ namespace p2c::pmon
         namespace vi = std::views;
         using ::pmon::util::str::ToWide;
         using ::pmon::util::str::ToLower;
+
+        inline const wchar_t* GetLocalizedStatDisplayName_(PM_STAT stat) noexcept
+        {
+            switch (stat) {
+            case PM_STAT_AVG:
+                return L"\u5E73\u5747";
+            case PM_STAT_PERCENTILE_99:
+                return L"99%";
+            case PM_STAT_PERCENTILE_95:
+                return L"95%";
+            case PM_STAT_PERCENTILE_90:
+                return L"90%";
+            case PM_STAT_PERCENTILE_01:
+                return L"1%";
+            case PM_STAT_PERCENTILE_05:
+                return L"5%";
+            case PM_STAT_PERCENTILE_10:
+                return L"10%";
+            case PM_STAT_MAX:
+                return L"\u6700\u5927";
+            case PM_STAT_MIN:
+                return L"\u6700\u5C0F";
+            case PM_STAT_MID_LERP:
+                return L"\u4E2D\u70B9\u63D2\u503C";
+            case PM_STAT_NEWEST_POINT:
+                return L"\u6700\u65B0";
+            case PM_STAT_OLDEST_POINT:
+                return L"\u6700\u65E9";
+            case PM_STAT_COUNT:
+                return L"\u8BA1\u6570";
+            case PM_STAT_NON_ZERO_AVG:
+                return L"\u975E\u96F6\u5E73\u5747";
+            default:
+                return nullptr;
+            }
+        }
     }
 
     class MetricFetcherFactory
@@ -54,13 +91,16 @@ namespace p2c::pmon
             pm_{ pm }
         {}
         // ** enumerate metrics reflection => introspect async endpoint
-        MetricInfo GetMetricInfo(const kern::QualifiedMetric& qmet, MetricLabelOptions opts = {}) const
+        MetricInfo GetMetricInfo(const kern::QualifiedMetric& qmet, MetricLabelOptions opts = {},
+            const std::string& displayName = {}) const
         {
             MetricInfo info;
 
             auto& intro = pm_.GetIntrospectionRoot();
             const auto metric = intro.FindMetric((PM_METRIC)qmet.metricId);
-            info.fullName = ToWide(metric.Introspect().GetName());
+            info.fullName = displayName.empty()
+                ? ToWide(metric.Introspect().GetName())
+                : ToWide(displayName);
             // find max array size among all devices with availability
             uint32_t arraySize = 0;
             for (auto&& dmi : metric.GetDeviceMetricInfo()) {
@@ -84,7 +124,10 @@ namespace p2c::pmon
             }
             // add stat to name (but exclude midpoint (mpt)
             if (qmet.statId != PM_STAT_MID_POINT) {
-                if (auto statAbbv = intro.FindEnumKey(PM_ENUM_STAT, qmet.statId).GetShortName(); !statAbbv.empty()) {
+                if (const auto pStatName = GetLocalizedStatDisplayName_((PM_STAT)qmet.statId)) {
+                    info.fullName += std::format(L" ({})", pStatName);
+                }
+                else if (auto statAbbv = intro.FindEnumKey(PM_ENUM_STAT, qmet.statId).GetShortName(); !statAbbv.empty()) {
                     info.fullName += std::format(L" ({})", ToWide(statAbbv));
                 }
             }

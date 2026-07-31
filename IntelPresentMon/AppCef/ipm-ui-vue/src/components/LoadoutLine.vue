@@ -29,6 +29,7 @@ import {
   qualifiedMetricForAvailabilityProbe,
 } from '@/core/metric-availability';
 import type { ListItem } from 'vuetify/lib/composables/list-items.mjs';
+import { zhCN } from '@/locales/zh-CN';
 
 defineOptions({name: 'LoadoutLine'})
 interface Props {
@@ -141,7 +142,7 @@ function buildDeviceSelectItem(id: number | null, title: string): DeviceSelectIt
 }
 
 const deviceSelectItems = computed((): DeviceSelectItem[] => [
-  buildDeviceSelectItem(null, 'Default'),
+  buildDeviceSelectItem(null, zhCN.loadout.defaultDevice),
   ...props.adapters.map((a) =>
     buildDeviceSelectItem(a.id, adapterSelectTitle(a)),
   ),
@@ -157,13 +158,13 @@ function adapterSelectTitle(adapter: Adapter): string {
 
 function deviceSelectionTitle(deviceId: number | null): string {
   if (deviceId === null || deviceId === 0) {
-    return 'Default';
+    return zhCN.loadout.defaultDevice;
   }
   const adapter = props.adapters.find((a) => a.id === deviceId);
   if (adapter !== undefined) {
     return adapterSelectTitle(adapter);
   }
-  return `[${deviceId}] Unknown GPU`;
+  return `[${deviceId}] ${zhCN.loadout.unknownGpu}`;
 }
 
 const arrayIndexOptions = computed(() => {
@@ -248,7 +249,16 @@ const findMetricById = (metricId: number) => {
   return metric;
 };
 
-const widgetTypeToString = (t: WidgetType) => WidgetType[t];
+const widgetTypeToString = (t: WidgetType) => {
+  switch (t) {
+    case WidgetType.Graph:
+      return zhCN.loadout.graph;
+    case WidgetType.Readout:
+      return zhCN.loadout.readout;
+    default:
+      return WidgetType[t];
+  }
+};
 const metricFromItem = (item: ListItem<unknown>) => item.raw as Metric;
 const deviceSelectItemFromListItem = (item: ListItem<unknown>) => item.raw as DeviceSelectItem;
 const statFromItem = (item: ListItem<unknown>) => item.raw as Stat;
@@ -269,7 +279,12 @@ const widgetTypeOptions = computed(() => {
 });
 
 const widgetSubtypeOptions = computed(() => {
-  return widgetType.value === WidgetType.Graph ? ['Line', 'Histogram'] : [];
+  return widgetType.value === WidgetType.Graph
+    ? [
+        { title: zhCN.loadout.line, value: 'Line' },
+        { title: zhCN.loadout.histogram, value: 'Histogram' },
+      ]
+    : [];
 });
 
 const statOptions = computed(() => statsForMetric(widgetMetric.value.metric.metricId));
@@ -400,7 +415,7 @@ const isReadoutWidget = computed(() => widgetType.value === WidgetType.Readout);
         :items="deviceSelectItems"
         item-value="id"
         item-title="title"
-        label="Device"
+        :label="zhCN.loadout.device"
         :disabled="locked"
         :density="isMaster ? 'default' : 'compact'"
       >
@@ -467,7 +482,7 @@ const isReadoutWidget = computed(() => widgetType.value === WidgetType.Readout);
         v-model="arrayIndex"
         class="loadout-field-idx"
         :items="arrayIndexOptions"
-        label="Idx"
+        :label="zhCN.loadout.index"
         hide-details
         :disabled="locked"
         :density="isMaster ? 'default' : 'compact'"
@@ -476,7 +491,7 @@ const isReadoutWidget = computed(() => widgetType.value === WidgetType.Readout);
     <div class="widget-cell col-stat">
       <v-select
         v-model="stat"
-        item-title="shortName"
+        item-title="name"
         :items="statOptions"
         :disabled="locked || statOptions.length < 2"
         return-object
@@ -485,7 +500,7 @@ const isReadoutWidget = computed(() => widgetType.value === WidgetType.Readout);
         <template v-slot:item="{ item, props: itemProps }">
           <v-tooltip :text="`${statFromItem(item).name}: ${statFromItem(item).description}`">
             <template v-slot:activator="{props: tooltipProps}">
-              <v-list-item v-bind="{...itemProps, ...tooltipProps}" :title="statFromItem(item).shortName"/>
+              <v-list-item v-bind="{...itemProps, ...tooltipProps}" :title="statFromItem(item).name"/>
             </template>
           </v-tooltip>
         </template>
@@ -516,7 +531,7 @@ const isReadoutWidget = computed(() => widgetType.value === WidgetType.Readout);
         :disabled="locked || widgetSubtypeOptions.length < 2"
         :density="isMaster ? 'default' : 'compact'"
       ></v-select>
-      <v-switch v-else v-model="axisAffinityRight" label="Right Axis" hide-details density="compact" class="mt-0" color="primary"></v-switch>
+      <v-switch v-else v-model="axisAffinityRight" :label="zhCN.loadout.rightAxis" hide-details density="compact" class="mt-0" color="primary"></v-switch>
     </div>
     <div class="widget-cell col-line-color">
       <color-picker

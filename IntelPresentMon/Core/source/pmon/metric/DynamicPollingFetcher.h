@@ -80,10 +80,12 @@ namespace p2c::pmon::met
     {
     public:
         TypedDynamicPollingFetcher(const PM_QUERY_ELEMENT& qel, const pmapi::intro::Root& introRoot,
-            std::shared_ptr<DynamicQuery> pQuery, std::shared_ptr<const pmapi::EnumMap::KeyMap> pKeyMap);
+            std::shared_ptr<DynamicQuery> pQuery, PM_ENUM enumId,
+            std::shared_ptr<const pmapi::EnumMap::KeyMap> pKeyMap);
         std::wstring ReadStringValue() override;
         std::optional<float> ReadValue() override;
     private:
+        PM_ENUM enumId_;
         std::shared_ptr<const pmapi::EnumMap::KeyMap> pKeyMap_;
     };
 

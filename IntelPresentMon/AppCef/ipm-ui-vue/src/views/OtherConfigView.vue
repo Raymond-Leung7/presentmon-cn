@@ -5,6 +5,7 @@
 import { ref } from 'vue';
 import { usePreferencesStore } from '@/stores/preferences';
 import { useHotkeyStore } from '@/stores/hotkey';
+import { zhCN } from '@/locales/zh-CN';
 
 const dialog = ref(false);
 const preferencesStore = usePreferencesStore();
@@ -20,34 +21,34 @@ async function reset() {
 <template>
   <div class="page-wrap">
     <h2 class="mt-5 ml-5 header-top">
-      Other Configuration
+      {{ zhCN.other.title }}
     </h2>
 
     <v-card class="page-card">
       <v-row class="mt-2">
         <v-col cols="3">
-          Reset Preferences
-          <p class="text-medium-emphasis text-caption mb-0">Reset all preferences to their defaults</p>
+          {{ zhCN.other.resetPreferences }}
+          <p class="text-medium-emphasis text-caption mb-0">{{ zhCN.other.resetPreferencesHelp }}</p>
         </v-col>
         <v-col cols="9">
           <v-row>
             <v-col cols="6">
-              <v-btn class="mt-2" color="primary" @click="dialog = true">Reset</v-btn>
+              <v-btn class="mt-2" color="primary" @click="dialog = true">{{ zhCN.common.reset }}</v-btn>
 
               <v-dialog v-model="dialog" max-width="500px">
                 <v-card>
-                  <v-card-title class="headline">Reset Preferences</v-card-title>
+                  <v-card-title class="headline">{{ zhCN.other.resetPreferences }}</v-card-title>
 
                   <v-card-text>
-                    Preferences will be set to their default values. All current settings will be lost. Continue?
+                    {{ zhCN.other.resetDialogText }}
                   </v-card-text>
 
                   <v-card-actions>
                     <v-spacer></v-spacer>
 
-                    <v-btn color="primary" @click="reset">Reset</v-btn>
+                    <v-btn color="primary" @click="reset">{{ zhCN.common.reset }}</v-btn>
 
-                    <v-btn color="grey darken-1" text @click="dialog = false">Cancel</v-btn>
+                    <v-btn color="grey darken-1" text @click="dialog = false">{{ zhCN.common.cancel }}</v-btn>
                   </v-card-actions>
                 </v-card>
               </v-dialog>

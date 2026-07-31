@@ -7,6 +7,7 @@ import type { Combination, ModifierCode, KeyCode } from '@/core/hotkey';
 import { Action } from '@/core/hotkey';
 import HotkeyDialog from './HotkeyDialog.vue';
 import { useHotkeyStore } from '@/stores/hotkey';
+import { zhCN } from '@/locales/zh-CN';
 
 // options
 defineOptions({ name: 'HotkeyButton'})
@@ -29,10 +30,19 @@ async function openHotkeyDialog() {
   await nextTick();
   dialogRef.value?.show();
 }
-// reformat the action enum name for display (add spaces)
 function getHotkeyActionName(action: Action): string {
-  const key = Action[action];
-  return key.match(/([A-Z]?[^A-Z]*)/g)?.slice(0, -1).join(" ") ?? "";
+  switch (action) {
+    case Action.ToggleCapture:
+      return zhCN.hotkey.toggleCapture;
+    case Action.ToggleOverlay:
+      return zhCN.hotkey.toggleOverlay;
+    case Action.CyclePreset:
+      return zhCN.hotkey.cyclePreset;
+    case Action.ToggleEtlLogging:
+      return zhCN.hotkey.toggleEtlLogging;
+    default:
+      return Action[action] ?? '';
+  }
 }
 // lookup modifier name via code
 function getHotkeyModifierName(mod: ModifierCode): string {
@@ -77,7 +87,7 @@ const hotkeyCombination = computed({
         </div>
     </div>
     <div v-else class="text-grey">
-        Select hotkey chord
+        {{ zhCN.hotkey.selectChord }}
     </div>
 
     <hotkey-dialog

@@ -17,7 +17,7 @@ export interface MetricAvailabilityReason {
     description: string,
 }
 
-export const METRIC_UNAVAILABLE_ON_ANY_DEVICE = 'Not available on any device';
+export const METRIC_UNAVAILABLE_ON_ANY_DEVICE = '在所有设备上均不可用';
 
 /** Used when introspection does not supply a description for an availability id. */
-export const METRIC_AVAILABILITY_REASON_FALLBACK = 'Metric is unavailable on the indicated device';
+export const METRIC_AVAILABILITY_REASON_FALLBACK = '该指标在所选设备上不可用';

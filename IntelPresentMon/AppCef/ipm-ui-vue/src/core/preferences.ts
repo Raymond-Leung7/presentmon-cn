@@ -16,6 +16,8 @@ export enum Preset {
     Custom = 1000,
 }
 
+export const DEFAULT_GRAPH_FONT_NAME = 'Microsoft YaHei UI';
+
 export interface Preferences {
     selectedPreset: Preset|null;
     capturePath: string;
@@ -51,7 +53,7 @@ export interface Preferences {
     readonly overlayBorderColor: RgbaColor;
     readonly overlayBackgroundColor: RgbaColor;
     readonly graphFont: {
-        readonly name: 'Verdana';
+        readonly name: string;
         readonly axisSize: 10.0;
     };    
     adapterId: number;
@@ -97,7 +99,7 @@ export function makeDefaultPreferences(): Preferences {
             a: 220 / 255, 
         }, 
         graphFont: { 
-            name: 'Verdana', 
+            name: DEFAULT_GRAPH_FONT_NAME,
             axisSize: 10.0, 
         }, 
         overlayWidth: 400,         

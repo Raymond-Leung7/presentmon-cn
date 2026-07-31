@@ -4,6 +4,7 @@
 #include <CommonUtilities/win/WinAPI.h>
 #include <include/cef_client.h>
 #include <include/cef_keyboard_handler.h>
+#include <atomic>
 #include <semaphore>
 #include <memory>
 #include <optional>
@@ -21,6 +22,7 @@ namespace p2c::client::cef
     public:
         NanoCefBrowserClient();
         CefRefPtr<CefBrowser> GetBrowser();
+        void RequestClose();
         CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override;
         CefRefPtr<CefDisplayHandler> GetDisplayHandler() override;
         CefRefPtr<CefKeyboardHandler> GetKeyboardHandler() override;
@@ -45,9 +47,12 @@ namespace p2c::client::cef
             bool* is_keyboard_shortcut) override;
 
     protected:
+        void CloseBrowserIfReady_();
+
         CefRefPtr<CefContextMenuHandler> pContextMenuHandler;
         CefRefPtr<CefBrowser> pBrowser;
         util::AsyncEndpointCollection endpoints;
+        std::atomic_bool closeRequested_{ false };
 
         // Include the default reference counting implementation.
         IMPLEMENT_REFCOUNTING(NanoCefBrowserClient);

@@ -34,9 +34,116 @@ constexpr const char* MessageWindowClassName = "MessageWindowClass";
 constexpr const int quitCefCode = 0xABAD1DEA;
 constexpr const UINT browserCreatedMessage = WM_APP + 1;
 constexpr const UINT browserClosingMessage = WM_APP + 2;
+constexpr const UINT_PTR closeWatchdogRequestedId = 0x504D434C;
+constexpr const UINT closeWatchdogTimeoutMs = 5000;
 CefRefPtr<client::cef::NanoCefBrowserClient> pBrowserClient;
 HWND hwndAppMsg = nullptr;
 HWND hwndBrowserChild = nullptr;
+bool appShuttingDown = false;
+bool forceQuitRequested = false;
+DWORD appThreadId = 0;
+HWND closeWatchdogWindow = nullptr;
+UINT_PTR closeWatchdogTimerId = 0;
+
+class CefShutdownWatchdog
+{
+public:
+    CefShutdownWatchdog()
+    {
+        stopEvent_ = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+        if (stopEvent_ == nullptr) {
+            pmlog_error("Failed to create the CEF shutdown watchdog event").hr();
+            return;
+        }
+
+        thread_ = CreateThread(
+            nullptr,
+            0,
+            ThreadEntry_,
+            this,
+            0,
+            nullptr);
+        if (thread_ == nullptr) {
+            pmlog_error("Failed to create the CEF shutdown watchdog thread").hr();
+            CloseHandle(stopEvent_);
+            stopEvent_ = nullptr;
+        }
+    }
+
+    ~CefShutdownWatchdog()
+    {
+        if (thread_ != nullptr) {
+            SetEvent(stopEvent_);
+            WaitForSingleObject(thread_, INFINITE);
+            CloseHandle(thread_);
+        }
+        if (stopEvent_ != nullptr) {
+            CloseHandle(stopEvent_);
+        }
+    }
+
+    CefShutdownWatchdog(const CefShutdownWatchdog&) = delete;
+    CefShutdownWatchdog& operator=(const CefShutdownWatchdog&) = delete;
+
+private:
+    static DWORD WINAPI ThreadEntry_(LPVOID context)
+    {
+        auto& watchdog = *reinterpret_cast<CefShutdownWatchdog*>(context);
+        if (WaitForSingleObject(watchdog.stopEvent_, closeWatchdogTimeoutMs) == WAIT_TIMEOUT) {
+            TerminateProcess(GetCurrentProcess(), 1);
+        }
+        return 0;
+    }
+
+    HANDLE stopEvent_ = nullptr;
+    HANDLE thread_ = nullptr;
+};
+
+void ForceQuitMessageLoop()
+{
+    pmlog_error("CEF browser close timed out; forcing UI process exit");
+    forceQuitRequested = true;
+    appShuttingDown = true;
+    PostQuitMessage(1);
+}
+
+void StopCloseWatchdog()
+{
+    if (closeWatchdogTimerId != 0) {
+        KillTimer(closeWatchdogWindow, closeWatchdogTimerId);
+        closeWatchdogWindow = nullptr;
+        closeWatchdogTimerId = 0;
+    }
+}
+
+void StartCloseWatchdog()
+{
+    if (closeWatchdogTimerId != 0) {
+        return;
+    }
+
+    closeWatchdogWindow = hwndAppMsg;
+    closeWatchdogTimerId = SetTimer(
+        closeWatchdogWindow,
+        closeWatchdogRequestedId,
+        closeWatchdogTimeoutMs,
+        nullptr);
+    if (closeWatchdogTimerId == 0) {
+        ForceQuitMessageLoop();
+    }
+}
+
+bool IsCloseWatchdogMessage(WPARAM wParam)
+{
+    return closeWatchdogTimerId != 0 &&
+        (UINT_PTR)wParam == closeWatchdogTimerId;
+}
+
+void HandleCloseWatchdogTimeout()
+{
+    StopCloseWatchdog();
+    ForceQuitMessageLoop();
+}
 
 void PostBrowserWindowMessage(HWND browserWindow, UINT message)
 {
@@ -124,10 +231,14 @@ LRESULT CALLBACK BrowserWindowWndProc(HWND window_handle, UINT message, WPARAM w
         if (Options::Get().url) {
             url = *Options::Get().url;
         }
-        CefBrowserHost::CreateBrowser(
+        if (!CefBrowserHost::CreateBrowser(
             info, pBrowserClient.get(), url,
             settings, {}, {}
-        );
+        )) {
+            pmlog_error("CEF browser creation request failed");
+            pBrowserClient = nullptr;
+            return -1;
+        }
         break;
     }
     case browserCreatedMessage:
@@ -167,6 +278,27 @@ LRESULT CALLBACK BrowserWindowWndProc(HWND window_handle, UINT message, WPARAM w
             return 1;
         }
         break;
+    case WM_CLOSE:
+        if (pBrowserClient) {
+            ShowWindow(window_handle, SW_HIDE);
+            pBrowserClient->RequestClose();
+            StartCloseWatchdog();
+        }
+        else {
+            DestroyWindow(window_handle);
+        }
+        return 0;
+    case WM_DESTROY:
+        if (!appShuttingDown) {
+            if (pBrowserClient) {
+                pBrowserClient->RequestClose();
+                StartCloseWatchdog();
+            }
+            else {
+                PostQuitMessage(0);
+            }
+        }
+        return 0;
     case WM_ENTERMENULOOP:
         if (!w_param) {
             CefSetOSModalLoop(true);
@@ -188,6 +320,12 @@ LRESULT CALLBACK MessageWindowWndProc(HWND window_handle, UINT message, WPARAM w
     case WM_COMMAND:
         if (w_param == quitCefCode) {
             PostQuitMessage(0);
+        }
+        break;
+    case WM_TIMER:
+        if (IsCloseWatchdogMessage(w_param)) {
+            HandleCloseWatchdogTimeout();
+            return 0;
         }
         break;
     }
@@ -247,6 +385,9 @@ void AppQuitMessageLoop()
 {
     if (hwndAppMsg != nullptr) {
         PostMessage(hwndAppMsg, WM_COMMAND, quitCefCode, 0);
+    }
+    else if (appThreadId != 0) {
+        PostThreadMessage(appThreadId, WM_QUIT, 0, 0);
     }
 }
 
@@ -314,6 +455,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
         pmlog_info(std::format("== UI client root process starting build#{} clean:{} CEF:{} ==",
             BuildIdShortHash(), !BuildIdDirtyFlag(), CEF_VERSION));
 
+        appThreadId = GetCurrentThreadId();
+
         {
             auto& folderResolver = infra::util::FolderResolver::Get();
             CefSettings settings;
@@ -331,30 +474,74 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
                 cefLogSeverity = ToCefLogLevel(util::log::Level::Debug);
             }
             settings.log_severity = cefLogSeverity;
-            CefInitialize(main_args, settings, app.get(), nullptr);
+            if (!CefInitialize(main_args, settings, app.get(), nullptr)) {
+                pmlog_error("CEF initialization failed");
+                return -1;
+            }
         }
         auto hwndBrowser = CreateBrowserWindow(hInstance, nCmdShow);
+        if (hwndBrowser == nullptr) {
+            pmlog_error("Failed to create the UI browser window");
+            appShuttingDown = true;
+            CefShutdownWatchdog shutdownWatchdog;
+            CefShutdown();
+            return -1;
+        }
         client::util::SetUiBrowserWindowMutexSuffix(hwndBrowser, *opt.uiMutexName);
         hwndAppMsg = CreateMessageWindow(hInstance);
-
-
-        MSG msg;
-        while (GetMessage(&msg, nullptr, 0, 0)) {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
+        if (hwndAppMsg == nullptr) {
+            pmlog_error("Failed to create the UI message window");
+            pBrowserClient->RequestClose();
+            StartCloseWatchdog();
         }
 
-        DestroyWindow(hwndAppMsg);
-        CefShutdown();
+
+        int exitCode = 0;
+        MSG msg{};
+        for (;;) {
+            const auto messageResult = GetMessage(&msg, nullptr, 0, 0);
+            if (messageResult > 0) {
+                if (msg.hwnd == nullptr && msg.message == WM_TIMER &&
+                    IsCloseWatchdogMessage(msg.wParam)) {
+                    HandleCloseWatchdogTimeout();
+                }
+                else {
+                    TranslateMessage(&msg);
+                    DispatchMessage(&msg);
+                }
+            }
+            else {
+                if (messageResult < 0) {
+                    pmlog_error("UI message loop failed").hr();
+                    exitCode = -1;
+                }
+                else {
+                    exitCode = (int)msg.wParam;
+                }
+                break;
+            }
+        }
+
+        appShuttingDown = true;
+        StopCloseWatchdog();
+        if (hwndAppMsg != nullptr) {
+            DestroyWindow(hwndAppMsg);
+        }
+        if (!forceQuitRequested) {
+            CefShutdownWatchdog shutdownWatchdog;
+            CefShutdown();
+        }
         client::util::ClearUiBrowserWindowMutexSuffix(hwndBrowser);
-        DestroyWindow(hwndBrowser);
+        if (IsWindow(hwndBrowser)) {
+            DestroyWindow(hwndBrowser);
+        }
 
         UnregisterClass(BrowserWindowClassName, hInstance);
         UnregisterClass(MessageWindowClassName, hInstance);
 
         pmlog_info("== UI client root process exiting ==");
 
-        return (int)msg.wParam;
+        return exitCode;
     }
     catch (...) {
         pmlog_error(ReportException("Fatal Error"));

@@ -10,7 +10,7 @@
 #endif
 
 #ifndef PM_CN_VERSION_PATCH
-#define PM_CN_VERSION_PATCH 2
+#define PM_CN_VERSION_PATCH 3
 #endif
 
 #define PM_CN_STRINGIZE_INNER(value) #value

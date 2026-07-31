@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 #include "NanoCefBrowserClient.h"
 #include <include/wrapper/cef_helpers.h>
+#include <include/cef_task.h>
+#include <include/base/cef_callback.h>
 #include "util/Logging.h"
 #include <format>
 #include <fstream>
@@ -42,6 +44,24 @@ namespace p2c::client::cef
         return pBrowser;
     }
 
+    void NanoCefBrowserClient::RequestClose()
+    {
+        closeRequested_.store(true, std::memory_order_release);
+        if (!CefPostTask(TID_UI, base::BindOnce(
+            &NanoCefBrowserClient::CloseBrowserIfReady_,
+            base::Unretained(this)))) {
+            pmlog_error("Failed to schedule CEF browser close");
+        }
+    }
+
+    void NanoCefBrowserClient::CloseBrowserIfReady_()
+    {
+        CEF_REQUIRE_UI_THREAD();
+        if (pBrowser) {
+            pBrowser->GetHost()->CloseBrowser(false);
+        }
+    }
+
     CefRefPtr<CefLifeSpanHandler> NanoCefBrowserClient::GetLifeSpanHandler()
     {
         return this;
@@ -72,9 +92,14 @@ namespace p2c::client::cef
     void NanoCefBrowserClient::OnAfterCreated(CefRefPtr<CefBrowser> browser_)
     {
         pBrowser = browser_;
-        AppNotifyBrowserCreated(pBrowser->GetHost()->GetWindowHandle());
-
         CefLifeSpanHandler::OnAfterCreated(std::move(browser_));
+
+        if (closeRequested_.load(std::memory_order_acquire)) {
+            CloseBrowserIfReady_();
+        }
+        else {
+            AppNotifyBrowserCreated(pBrowser->GetHost()->GetWindowHandle());
+        }
     }
 
     void NanoCefBrowserClient::OnBeforeClose(CefRefPtr<CefBrowser> browser_)

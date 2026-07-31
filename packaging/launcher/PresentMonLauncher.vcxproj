@@ -55,7 +55,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <UACUIAccess>false</UACUIAccess>
-      <AdditionalDependencies>advapi32.lib;shell32.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>advapi32.lib;netapi32.lib;shell32.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/DEPENDENTLOADFLAG:0x800 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ResourceCompile>
       <PreprocessorDefinitions>PM_CN_VERSION_MAJOR=$(AppVersionMajor);PM_CN_VERSION_MINOR=$(AppVersionMinor);PM_CN_VERSION_PATCH=$(AppVersionPatch);%(PreprocessorDefinitions)</PreprocessorDefinitions>

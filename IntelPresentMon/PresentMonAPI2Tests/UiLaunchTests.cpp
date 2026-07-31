@@ -130,6 +130,19 @@ namespace UiLaunchTests
 		Assert::IsTrue(process.WaitForExit(5s), L"Kernel process did not exit");
 	}
 
+	static void CloseUiWindowAndWait_(
+		const std::string& mutexSuffix,
+		HWND hWnd,
+		TestProcess& process)
+	{
+		Assert::IsTrue(PostMessageW(hWnd, WM_CLOSE, 0, 0) != FALSE,
+			L"Failed to post WM_CLOSE to the UI window");
+		Assert::IsTrue(process.WaitForExit(10s),
+			L"UI process did not exit after its window was closed");
+		Assert::IsFalse(ui::IsUiBrowserProcessActive(mutexSuffix),
+			L"UI process mutex remained active after window close");
+	}
+
 	TEST_CLASS(UiProcessGuardTests)
 	{
 		TestFixture fixture_;
@@ -185,6 +198,57 @@ namespace UiLaunchTests
 			Assert::IsTrue(second.IsRunning(), L"Replacement kernel process should remain active");
 
 			TerminateUiInstanceAndWait_(mutexSuffix, second);
+		}
+
+		TEST_METHOD(ApplicationWindowCloseReleasesSingleInstanceGuard)
+		{
+			const auto mutexSuffix = MakeMutexSuffix_("WindowClose");
+			auto process = fixture_.LaunchKernel(MakeKernelArgs_(mutexSuffix));
+			const auto hWnd = WaitForUiWindow_(mutexSuffix);
+
+			CloseUiWindowAndWait_(mutexSuffix, hWnd, process);
+		}
+
+		TEST_METHOD(CefInitializationEarlyExitDoesNotLeaveUiGuard)
+		{
+			const auto ownerMutexSuffix = MakeMutexSuffix_("CefCacheOwner");
+			const auto contenderMutexSuffix = MakeMutexSuffix_("CefCacheContender");
+			auto owner = fixture_.LaunchUi({
+				"--p2c-files-working"s,
+				"--p2c-ui-mutex-name"s, ownerMutexSuffix,
+			});
+			WaitForUiWindow_(ownerMutexSuffix);
+
+			// A second CEF root using the same working-directory cache must take the
+			// CefInitialize early-exit path. Older code ignored that result, created
+			// a black outer window, and retained the custom UI mutex after WM_CLOSE.
+			auto contender = fixture_.LaunchUi({
+				"--p2c-files-working"s,
+				"--p2c-ui-mutex-name"s, contenderMutexSuffix,
+			});
+
+			HWND contenderWindow = nullptr;
+			Assert::IsTrue(WaitFor_(10s, [&] {
+				if (!contender.IsRunning()) {
+					return true;
+				}
+				contenderWindow = ui::FindUiBrowserWindow(contenderMutexSuffix);
+				return contenderWindow != nullptr;
+			}), L"Contending CEF process neither exited nor created a diagnosable window");
+
+			if (contender.IsRunning()) {
+				Assert::IsTrue(contenderWindow != nullptr,
+					L"Running contending CEF process has no discoverable window");
+				Assert::IsTrue(PostMessageW(contenderWindow, WM_CLOSE, 0, 0) != FALSE,
+					L"Failed to close the contending CEF window");
+			}
+
+			Assert::IsTrue(contender.WaitForExit(10s),
+				L"CEF initialization early exit left a background UI process");
+			Assert::IsFalse(ui::IsUiBrowserProcessActive(contenderMutexSuffix),
+				L"CEF initialization early exit left the single-instance mutex active");
+
+			TerminateUiInstanceAndWait_(ownerMutexSuffix, owner);
 		}
 
 		TEST_METHOD(SimultaneousApplicationLaunchesBringExistingUiToForeground)

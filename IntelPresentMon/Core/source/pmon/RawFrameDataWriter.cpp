@@ -7,7 +7,10 @@
 #include <format>
 #include <array>
 #include <charconv>
+#include <cmath>
+#include <iomanip>
 #include <string_view>
+#include "HwInfoSharedMemoryReader.h"
 #include "RawFrameDataMetricList.h"
 #include "../cli/CliOptions.h"
 
@@ -18,6 +21,24 @@ namespace p2c::pmon
 
     namespace
     {
+        void WriteCsvField_(std::ostream& out, std::string_view value)
+        {
+            const bool needsQuotes = value.find_first_of(",\"\r\n") != std::string_view::npos;
+            if (!needsQuotes) {
+                out << value;
+                return;
+            }
+
+            out << '"';
+            for (const char c : value) {
+                if (c == '"') {
+                    out << '"';
+                }
+                out << c;
+            }
+            out << '"';
+        }
+
         struct MetricSpec_
         {
             std::string symbol;
@@ -470,7 +491,6 @@ namespace p2c::pmon
                 // annotation contains polymorphic info to reinterpret and convert bytes
                 pAnno->Write(out, pBytes);
             }
-            out << "\n";
         }
         void WriteHeader(std::ostream& out)
         {
@@ -480,7 +500,6 @@ namespace p2c::pmon
                 }
                 out << pAnno->columnName;
             }
-            out << std::endl;
         }
     private:
         pmapi::FrameQuery query_;
@@ -519,12 +538,37 @@ namespace p2c::pmon
         }
         pQueryElementContainer = std::make_unique<QueryElementContainer_>(columns, session, introRoot);
         blobs = pQueryElementContainer->MakeBlobs(numberOfBlobs);                
+
+        try {
+            auto reader = std::make_unique<HwInfoSharedMemoryReader>();
+            if (reader->Open()) {
+                hwInfoSnapshotValid = true;
+                pmlog_info(std::format("HWiNFO capture enabled with {} sensor columns", reader->Columns().size()));
+                pHwInfoReader = std::move(reader);
+            }
+            else {
+                pmlog_warn("HWiNFO shared memory is not ready; writing PresentMon-only capture");
+            }
+        }
+        catch (...) {
+            pmlog_warn("Failed to initialize HWiNFO shared memory; writing PresentMon-only capture");
+        }
+
         // write header
+        if (pHwInfoReader) {
+            file << "\xEF\xBB\xBF";
+        }
         pQueryElementContainer->WriteHeader(file);
+        WriteHwInfoHeader_();
+        file << '\n';
     }
 
     void RawFrameDataWriter::Process()
     {
+        if (pHwInfoReader) {
+            hwInfoSnapshotValid = pHwInfoReader->Refresh();
+        }
+
         // continue consuming frames until none are left pending
         do {
             pQueryElementContainer->Consume(procTracker, blobs);
@@ -549,9 +593,56 @@ namespace p2c::pmon
                     }
                 }
                 pQueryElementContainer->WriteFrame(file, pBlob);
+                WriteHwInfoValues_();
+                file << '\n';
             }
         } while (blobs.AllBlobsPopulated()); // if container filled, means more might be left
         file << std::flush;
+    }
+
+    void RawFrameDataWriter::WriteHwInfoHeader_()
+    {
+        if (!pHwInfoReader) {
+            return;
+        }
+
+        file << ",HWiNFO.SampleValid,HWiNFO.SampleTimeUnix,HWiNFO.SampleAgeMs";
+        for (const auto& column : pHwInfoReader->Columns()) {
+            file << ',';
+            WriteCsvField_(file, column);
+        }
+    }
+
+    void RawFrameDataWriter::WriteHwInfoValues_()
+    {
+        if (!pHwInfoReader) {
+            return;
+        }
+
+        file << ',' << (hwInfoSnapshotValid ? 1 : 0) << ',';
+        const auto& columns = pHwInfoReader->Columns();
+        const auto& values = pHwInfoReader->Values();
+        if (!hwInfoSnapshotValid || values.size() != columns.size()) {
+            file << "NA,NA";
+            for (size_t i = 0; i < columns.size(); ++i) {
+                file << ",NA";
+            }
+            return;
+        }
+
+        file << pHwInfoReader->LastUpdate() << ',' << pHwInfoReader->SampleAgeMs();
+        const auto oldPrecision = file.precision();
+        file << std::setprecision(10);
+        for (const double value : values) {
+            file << ',';
+            if (std::isfinite(value)) {
+                file << value;
+            }
+            else {
+                file << "NA";
+            }
+        }
+        file.precision(oldPrecision);
     }
 
     double RawFrameDataWriter::GetDuration_() const

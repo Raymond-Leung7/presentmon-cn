@@ -14,6 +14,7 @@
 namespace p2c::pmon
 {
 	class QueryElementContainer_;
+	class HwInfoSharedMemoryReader;
 
 	class RawFrameDataWriter
 	{
@@ -29,6 +30,8 @@ namespace p2c::pmon
 		// functions
 		double GetDuration_() const;
 		void WriteStats_();
+		void WriteHwInfoHeader_();
+		void WriteHwInfoValues_();
 		// data
 		static constexpr uint32_t numberOfBlobs = 150u;
 		const pmapi::ProcessTracker& procTracker;
@@ -36,6 +39,8 @@ namespace p2c::pmon
 		std::optional<std::wstring> frameStatsPath;
 		std::unique_ptr<StatisticsTracker> pStatsTracker;
 		std::unique_ptr<StatisticsTracker> pAnimationErrorTracker;
+		std::unique_ptr<HwInfoSharedMemoryReader> pHwInfoReader;
+		bool hwInfoSnapshotValid = false;
 		pmapi::BlobContainer blobs;
 		double startTime = -1.;
 		double endTime = -1.;

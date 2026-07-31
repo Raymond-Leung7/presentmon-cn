@@ -188,7 +188,7 @@ watch(() => loadout.widgets, async () => {
         </v-navigation-drawer>
 
         <v-main class="main-view">
-          <div class="d-flex justify-center">
+          <div class="route-host">
             <router-view />
           </div>
         </v-main>
@@ -259,9 +259,20 @@ watch(() => loadout.widgets, async () => {
 }
 
 .main-view {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 100%;
   overflow-y: auto;
   height: 100%;
+}
+
+.route-host {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0 16px;
 }
 
 .footer-wrap {

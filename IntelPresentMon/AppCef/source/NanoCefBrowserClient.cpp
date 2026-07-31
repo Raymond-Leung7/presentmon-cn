@@ -11,6 +11,8 @@
 
 // implemented in winmain.cpp
 void AppQuitMessageLoop();
+void AppNotifyBrowserCreated(HWND browserWindow);
+void AppNotifyBrowserClosing(HWND browserWindow);
 
 using namespace pmon::util;
 
@@ -70,12 +72,14 @@ namespace p2c::client::cef
     void NanoCefBrowserClient::OnAfterCreated(CefRefPtr<CefBrowser> browser_)
     {
         pBrowser = browser_;
+        AppNotifyBrowserCreated(pBrowser->GetHost()->GetWindowHandle());
 
         CefLifeSpanHandler::OnAfterCreated(std::move(browser_));
     }
 
     void NanoCefBrowserClient::OnBeforeClose(CefRefPtr<CefBrowser> browser_)
     {
+        AppNotifyBrowserClosing(browser_->GetHost()->GetWindowHandle());
         CefLifeSpanHandler::OnBeforeClose(browser_);
         pBrowser.reset();
         AppQuitMessageLoop();

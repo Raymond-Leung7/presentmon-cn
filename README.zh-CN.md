@@ -84,7 +84,7 @@ Debug 构建不需要 Release 版本使用的测试证书。
 准备好完整的 Release 依赖后，可在仓库根目录运行：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\packaging\build-release.ps1 -Version 1.1.0
+powershell -ExecutionPolicy Bypass -File .\packaging\build-release.ps1 -Version 1.1.1
 ```
 
 脚本会构建无控制台窗口的启动器、便携 ZIP、当前用户安装程序和 SHA-256 校验文件，输出到 `dist` 文件夹。安装程序需要 Inno Setup 6；只需要便携包时可添加 `-SkipInstaller`。

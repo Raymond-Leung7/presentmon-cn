@@ -300,7 +300,10 @@ const processFromItem = (item: ListItem<unknown>) => item.raw as Process;
     padding: 0 15px 15px;
 }
 .page-wrap {
+    width: 100%;
     max-width: 1024px;
+    min-width: 0;
+    box-sizing: border-box;
 }
 .hilight-info {
     color: greenyellow;

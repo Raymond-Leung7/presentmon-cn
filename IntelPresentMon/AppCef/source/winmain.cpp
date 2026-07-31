@@ -32,8 +32,58 @@ using namespace std::chrono_literals;
 constexpr const char* BrowserWindowClassName = "BrowserWindowClass";
 constexpr const char* MessageWindowClassName = "MessageWindowClass";
 constexpr const int quitCefCode = 0xABAD1DEA;
+constexpr const UINT browserCreatedMessage = WM_APP + 1;
+constexpr const UINT browserClosingMessage = WM_APP + 2;
 CefRefPtr<client::cef::NanoCefBrowserClient> pBrowserClient;
 HWND hwndAppMsg = nullptr;
+HWND hwndBrowserChild = nullptr;
+
+void PostBrowserWindowMessage(HWND browserWindow, UINT message)
+{
+    if (browserWindow == nullptr) {
+        return;
+    }
+
+    const auto parentWindow = GetParent(browserWindow);
+    if (parentWindow != nullptr) {
+        PostMessage(parentWindow, message, 0,
+            reinterpret_cast<LPARAM>(browserWindow));
+    }
+}
+
+void AppNotifyBrowserCreated(HWND browserWindow)
+{
+    PostBrowserWindowMessage(browserWindow, browserCreatedMessage);
+}
+
+void AppNotifyBrowserClosing(HWND browserWindow)
+{
+    PostBrowserWindowMessage(browserWindow, browserClosingMessage);
+}
+
+void ResizeBrowserToClient(HWND parentWindow)
+{
+    if (hwndBrowserChild == nullptr
+        || !IsWindow(hwndBrowserChild)
+        || GetParent(hwndBrowserChild) != parentWindow) {
+        return;
+    }
+
+    RECT rect{};
+    if (!GetClientRect(parentWindow, &rect)) {
+        return;
+    }
+
+    const auto width = rect.right - rect.left;
+    const auto height = rect.bottom - rect.top;
+    if (width <= 0 || height <= 0) {
+        return;
+    }
+
+    SetWindowPos(hwndBrowserChild, nullptr,
+        rect.left, rect.top, width, height,
+        SWP_NOACTIVATE | SWP_NOZORDER);
+}
 
 UINT GetInitialWindowDpi()
 {
@@ -80,19 +130,27 @@ LRESULT CALLBACK BrowserWindowWndProc(HWND window_handle, UINT message, WPARAM w
         );
         break;
     }
+    case browserCreatedMessage:
+    {
+        const auto browserWindow = reinterpret_cast<HWND>(l_param);
+        if (browserWindow != nullptr
+            && IsWindow(browserWindow)
+            && GetParent(browserWindow) == window_handle) {
+            hwndBrowserChild = browserWindow;
+            ResizeBrowserToClient(window_handle);
+        }
+        return 0;
+    }
+    case browserClosingMessage:
+        if (hwndBrowserChild == reinterpret_cast<HWND>(l_param)) {
+            hwndBrowserChild = nullptr;
+        }
+        return 0;
     case WM_SIZE:
         // from the cefclient example, do not allow the window to be resized to 0x0 or the layout will break;
         // also be aware that if the size gets too small, GPU acceleration disables
-        if ((w_param != SIZE_MINIMIZED)
-            && (pBrowserClient.get())
-            && (pBrowserClient->GetBrowser()))
-        {
-            CefWindowHandle hwnd(pBrowserClient->GetBrowser()->GetHost()->GetWindowHandle());
-            if (hwnd) {
-                RECT rect{};
-                GetClientRect(window_handle, &rect);
-                SetWindowPos(hwnd, NULL, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOZORDER);
-            }
+        if (w_param != SIZE_MINIMIZED) {
+            ResizeBrowserToClient(window_handle);
         }
         break;
     case WM_DPICHANGED:
@@ -105,10 +163,7 @@ LRESULT CALLBACK BrowserWindowWndProc(HWND window_handle, UINT message, WPARAM w
         return 0;
     }
     case WM_ERASEBKGND:
-        if (pBrowserClient.get()
-            && pBrowserClient->GetBrowser()
-            && pBrowserClient->GetBrowser()->GetHost()->GetWindowHandle() != nullptr)
-        {
+        if (hwndBrowserChild != nullptr && IsWindow(hwndBrowserChild)) {
             return 1;
         }
         break;

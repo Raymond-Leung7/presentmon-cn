@@ -107,14 +107,15 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <UACUIAccess>true</UACUIAccess>
+      <UACUIAccess Condition="'$(PortableBuild)'!='true'">true</UACUIAccess>
+      <UACUIAccess Condition="'$(PortableBuild)'=='true'">false</UACUIAccess>
       <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);ntdll.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>SignTool sign /a /v /s PrivateCertStore /n "Test Certificate - For Internal Use Only" /t http://timestamp.comodoca.com/authenticode /fd sha1 "$(OutDir)$(TargetFileName)"</Command>
+      <Command Condition="'$(PortableBuild)'!='true'">SignTool sign /a /v /s PrivateCertStore /n "Test Certificate - For Internal Use Only" /t http://timestamp.comodoca.com/authenticode /fd sha1 "$(OutDir)$(TargetFileName)"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
-      <Message>Sign-sign Release for local dev</Message>
+      <Message Condition="'$(PortableBuild)'!='true'">Sign-sign Release for local dev</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-EDSS|x64'">

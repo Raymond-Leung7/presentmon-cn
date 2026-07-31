@@ -1,0 +1,56 @@
+#include "resource.h"
+#include <winver.h>
+
+#ifndef PM_CN_VERSION_MAJOR
+#define PM_CN_VERSION_MAJOR 1
+#endif
+
+#ifndef PM_CN_VERSION_MINOR
+#define PM_CN_VERSION_MINOR 1
+#endif
+
+#ifndef PM_CN_VERSION_PATCH
+#define PM_CN_VERSION_PATCH 0
+#endif
+
+#define PM_CN_STRINGIZE_INNER(value) #value
+#define PM_CN_STRINGIZE(value) PM_CN_STRINGIZE_INNER(value)
+#define PM_CN_VERSION_TEXT \
+    PM_CN_STRINGIZE(PM_CN_VERSION_MAJOR) "." \
+    PM_CN_STRINGIZE(PM_CN_VERSION_MINOR) "." \
+    PM_CN_STRINGIZE(PM_CN_VERSION_PATCH) ".0"
+
+IDI_APP_ICON ICON "../../IntelPresentMon/AppCef/flask.ico"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION PM_CN_VERSION_MAJOR,PM_CN_VERSION_MINOR,PM_CN_VERSION_PATCH,0
+ PRODUCTVERSION PM_CN_VERSION_MAJOR,PM_CN_VERSION_MINOR,PM_CN_VERSION_PATCH,0
+ FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+ FILEFLAGS VS_FF_DEBUG
+#else
+ FILEFLAGS 0
+#endif
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_APP
+ FILESUBTYPE VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "Raymond-Leung7\0"
+            VALUE "FileDescription", "PresentMon CN Launcher\0"
+            VALUE "FileVersion", PM_CN_VERSION_TEXT "\0"
+            VALUE "InternalName", "PresentMon-CN\0"
+            VALUE "LegalCopyright", "Copyright (C) Raymond-Leung7 and PresentMon contributors\0"
+            VALUE "OriginalFilename", "PresentMon-CN.exe\0"
+            VALUE "ProductName", "PresentMon CN\0"
+            VALUE "ProductVersion", PM_CN_VERSION_TEXT "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END

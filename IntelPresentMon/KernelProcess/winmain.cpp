@@ -379,7 +379,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 		// set the app id so that windows get grouped
 		// TODO: verify operation when multiple app instances running concurrently
-		SetCurrentProcessExplicitAppUserModelID(L"Intel.PresentMon");
+		SetCurrentProcessExplicitAppUserModelID(L"RaymondLeung7.PresentMonCN");
 
 		pmlog_info(std::format("== kernel process starting build#{} clean:{} ==",
 			bid::BuildIdShortHash(), !bid::BuildIdDirtyFlag()));
@@ -418,7 +418,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 				::pmon::util::file::ScopedWorkingDirectory setInstallWorkingDirectory{
 					infra::util::FolderResolver::ResolveInstallPath()
 				};
-				svcChild = bp2::windows::default_launcher{}(ioctx, "PresentMonService.exe"s, std::move(args));
+				auto svcLauncher = bp2::windows::default_launcher{};
+				if (!fromTerminal) {
+					svcLauncher.creation_flags |= CREATE_NO_WINDOW;
+				}
+				svcChild = svcLauncher(ioctx, "PresentMonService.exe"s, std::move(args));
 			}
 			// wait for pipe availability of service api
 			if (!::pmon::util::win::WaitForNamedPipe(*opt.controlPipe + "-in", 1500000)) {

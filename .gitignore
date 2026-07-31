@@ -3,6 +3,7 @@
 
 # Build results
 /build/
+/dist/
 PresentMon/build/
 
 # Claude Code

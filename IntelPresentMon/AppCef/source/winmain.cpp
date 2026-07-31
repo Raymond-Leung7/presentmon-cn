@@ -235,7 +235,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     client::util::ConfigureLogging();
 
     // set the app id so that windows get grouped
-    SetCurrentProcessExplicitAppUserModelID(L"Intel.PresentMon");
+    SetCurrentProcessExplicitAppUserModelID(L"RaymondLeung7.PresentMonCN");
 
     try {
         using namespace client;

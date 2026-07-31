@@ -12,6 +12,7 @@ xcopy /SY "Cef\Resources" "%~2"
 if "%~1"=="Release" (
 	echo "Build Web Assets..."
 	call "%~dp0build-web.bat"
+	if errorlevel 1 exit /b 1
 )
 
 echo Copy web resources...
